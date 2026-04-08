@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.1] - 2026-04-08
+
+### Changed
+- New 3D isometric icon (2x2x2 cube grid, 4 container colors)
+- Popup width now auto-adapts to content (removed fixed min-width)
+
+### Fixed
+- SCSS: all hardcoded colors migrated to CSS custom properties
+- Dark mode: Firefox Proton palette via `prefers-color-scheme`
+- System font stack replacing Helvetica Neue
+
 ## [0.1.0] - 2026-04-08
 
 Fork of [Containerise 3.9.0](https://github.com/kintesh/containerise). Full rewrite.

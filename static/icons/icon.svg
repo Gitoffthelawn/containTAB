@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- 2x2x2 isometric cube grid — containTAB icon -->
+  <!-- 4 colors = 4 container types, stacked = isolation layers -->
+
+  <defs>
+    <!-- Blue -->
+    <linearGradient id="bT" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#62a0ea"/><stop offset="100%" stop-color="#3584e4"/></linearGradient>
+    <linearGradient id="bL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3584e4"/><stop offset="100%" stop-color="#1a5fb4"/></linearGradient>
+    <linearGradient id="bR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c71d8"/><stop offset="100%" stop-color="#144a8a"/></linearGradient>
+    <!-- Green -->
+    <linearGradient id="gT" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#57e389"/><stop offset="100%" stop-color="#2ec27e"/></linearGradient>
+    <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2ec27e"/><stop offset="100%" stop-color="#1a8553"/></linearGradient>
+    <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#26a269"/><stop offset="100%" stop-color="#14704a"/></linearGradient>
+    <!-- Orange -->
+    <linearGradient id="oT" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff7800"/><stop offset="100%" stop-color="#e66100"/></linearGradient>
+    <linearGradient id="oL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e66100"/><stop offset="100%" stop-color="#b34d00"/></linearGradient>
+    <linearGradient id="oR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c64600"/><stop offset="100%" stop-color="#8a3200"/></linearGradient>
+    <!-- Purple -->
+    <linearGradient id="pT" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c061cb"/><stop offset="100%" stop-color="#9141ac"/></linearGradient>
+    <linearGradient id="pL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9141ac"/><stop offset="100%" stop-color="#6c2d82"/></linearGradient>
+    <linearGradient id="pR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#813d9c"/><stop offset="100%" stop-color="#5b2874"/></linearGradient>
+  </defs>
+
+  <!--
+    Isometric projection, s=48:
+    sx = s * cos30 = 48 * 0.866 = 42
+    sy = s * sin30 = 48 * 0.5  = 24
+    h  = s = 48
+
+    Grid axes from origin (center-top of structure):
+    +x direction: (sx, sy)  = (+42, +24)
+    +y direction: (-sx, sy) = (-42, +24)
+    +z direction: (0, -h)   = (0, -48)
+
+    Cube top-vertex positions (cx, cy) where cube is drawn:
+    A cube at grid (gx, gy, gz):
+      cx = (gx - gy) * 42
+      cy = (gx + gy) * 24 - gz * 48
+
+    Bottom layer (gz=0):
+      (0,0,0): cx=0,   cy=0    — back corner (purple)
+      (1,0,0): cx=42,  cy=24   — right (blue)
+      (0,1,0): cx=-42, cy=24   — left (orange)
+      (1,1,0): cx=0,   cy=48   — front (green)
+
+    Top layer (gz=1):
+      (0,0,1): cx=0,   cy=-48  — back corner (purple)
+      (1,0,1): cx=42,  cy=-24  — right (blue)
+      (0,1,1): cx=-42, cy=-24  — left (orange)
+      (1,1,1): cx=0,   cy=0    — front (green)
+
+    Draw order: back-to-front, bottom-to-top
+  -->
+
+  <g transform="translate(128, 152)">
+    <!-- === BOTTOM LAYER (gz=0) === -->
+
+    <!-- (0,0,0) back — purple -->
+    <g transform="translate(0, 0)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#pL)" stroke="#3a1650" stroke-width="0.5" opacity="0.4"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#pR)" stroke="#3a1650" stroke-width="0.5" opacity="0.4"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#pT)" stroke="#3a1650" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- (0,1,0) left — orange -->
+    <g transform="translate(-42, 24)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#oL)" stroke="#5a2800" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#oR)" stroke="#5a2800" stroke-width="0.5" opacity="0.4"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#oT)" stroke="#5a2800" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- (1,0,0) right — blue -->
+    <g transform="translate(42, 24)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#bL)" stroke="#0d3b66" stroke-width="0.5" opacity="0.4"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#bR)" stroke="#0d3b66" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#bT)" stroke="#0d3b66" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- (1,1,0) front — green -->
+    <g transform="translate(0, 48)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#gL)" stroke="#0a4a2e" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#gR)" stroke="#0a4a2e" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#gT)" stroke="#0a4a2e" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- === TOP LAYER (gz=1) === -->
+
+    <!-- (0,0,1) back — purple -->
+    <g transform="translate(0, -48)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#pL)" stroke="#3a1650" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#pR)" stroke="#3a1650" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#pT)" stroke="#3a1650" stroke-width="0.5"/>
+    </g>
+
+    <!-- (0,1,1) left — orange -->
+    <g transform="translate(-42, -24)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#oL)" stroke="#5a2800" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#oR)" stroke="#5a2800" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#oT)" stroke="#5a2800" stroke-width="0.5"/>
+    </g>
+
+    <!-- (1,0,1) right — blue -->
+    <g transform="translate(42, -24)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#bL)" stroke="#0d3b66" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#bR)" stroke="#0d3b66" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#bT)" stroke="#0d3b66" stroke-width="0.5"/>
+    </g>
+
+    <!-- (1,1,1) front — green -->
+    <g transform="translate(0, 0)">
+      <polygon points="0,0 -42,-24 -42,24 0,48" fill="url(#gL)" stroke="#0a4a2e" stroke-width="0.5"/>
+      <polygon points="0,0 42,-24 42,24 0,48" fill="url(#gR)" stroke="#0a4a2e" stroke-width="0.5"/>
+      <polygon points="0,0 -42,-24 0,-48 42,-24" fill="url(#gT)" stroke="#0a4a2e" stroke-width="0.5"/>
+    </g>
+  </g>
+</svg>
