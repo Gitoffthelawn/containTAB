@@ -12,7 +12,7 @@
  */
 
 import Storage from './Storage/HostStorage';
-import ContextualIdentity, { NO_CONTAINER } from './ContextualIdentity';
+import ContextualIdentity from './ContextualIdentity';
 import Tabs from './Tabs';
 import PreferenceStorage from './Storage/PreferenceStorage';
 import { buildDefaultContainer } from './defaultContainer';

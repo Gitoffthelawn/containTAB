@@ -1,0 +1,35 @@
+# dev-only
+.claude/
+.sessions/
+CLAUDE.md
+docs/
+scripts/
+.cleanup/
+dist/
+v2/
+
+# build tools
+.babelrc
+.eslintrc
+.nvmrc
+vitest.config.js
+webpack.*.js
+
+# tests
+__tests__/
+__mocks__/
+*.spec.js
+*.test.js
+
+# artifacts
+node_modules/
+build/
+web-ext-artifacts/
+*.zip
+
+# misc
+.idea/
+.DS_Store
+/profile
+containerise.iml
+.gitignore

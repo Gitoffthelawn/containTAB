@@ -52,7 +52,7 @@
     Draw order: back-to-front, bottom-to-top
   -->
 
-  <g transform="translate(128, 152)">
+  <g transform="translate(128, 138) scale(1.42)">
     <!-- === BOTTOM LAYER (gz=0) === -->
 
     <!-- (0,0,0) back — purple -->

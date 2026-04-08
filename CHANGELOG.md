@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2] - 2026-04-08
+
+### Fixed
+- Build pipeline: `npm run build` now passes lint + test + webpack + web-ext
+- `.gitignore`: exclude `dist/` from eslint scan
+- Core tests: removed `import from 'vitest'` (jest uses globals)
+- HostStorage test: fixed API call to match rewritten `get()` signature
+- Jest config: exclude `.cleanup/` from test discovery
+- Icon scaled to fill canvas (no more oversized padding)
+
 ## [0.1.1] - 2026-04-08
 
 ### Changed
