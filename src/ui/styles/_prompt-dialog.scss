@@ -1,0 +1,171 @@
+// Prompt Dialog Styles
+// Modal dialog for text input with validation
+
+.prompt-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+
+  &.hide {
+    display: none;
+  }
+}
+
+.prompt-dialog {
+  background: var(--surface);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px var(--shadow);
+  min-width: 300px;
+  max-width: 90%;
+  animation: slideDown 0.2s ease-out;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+
+  h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.dialog-close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+    fill: currentColor;
+  }
+}
+
+.dialog-body {
+  padding: 16px;
+
+  p {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+}
+
+.dialog-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus);
+  }
+
+  &.error {
+    border-color: var(--danger);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+.dialog-error {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--danger);
+  min-height: 18px;
+  display: none;
+
+  &:not(:empty) {
+    display: block;
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.dialog-cancel-button,
+.dialog-confirm-button {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  border: none;
+}
+
+.dialog-cancel-button {
+  background: var(--btn);
+  color: var(--text);
+
+  &:hover {
+    background: var(--btn-hover);
+  }
+}
+
+.dialog-confirm-button {
+  background: var(--focus);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--focus-hover);
+  }
+
+  &:disabled {
+    background: var(--btn);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,19 @@
+@import "variables";
+
+.toast {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0.6rem 1rem;
+  transform: translate3d(0,0,0);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  z-index: 100;
+  transition: bottom 0.25s ease;
+  font-size: 0.85rem;
+
+  &.hide {
+    bottom: -10vh;
+  }
+}

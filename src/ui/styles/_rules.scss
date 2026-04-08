@@ -1,0 +1,123 @@
+// Rules section
+
+.rules-add-form {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.rules-host-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus);
+  }
+}
+
+.rules-container-select {
+  min-width: 120px;
+  padding: 6px 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.rules-add-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--accent);
+  color: #fff;
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+}
+
+// Rule list
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rules-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px 0;
+  font-size: 0.85rem;
+}
+
+.rule-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 0.85rem;
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.rule-host {
+  cursor: pointer;
+  word-break: break-all;
+  font-family: $font-mono;
+  font-size: 0.8rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.rule-host-edit {
+  width: 100%;
+  padding: 2px 4px;
+  border: 1px solid var(--text-muted);
+  border-radius: 2px;
+  font-family: $font-mono;
+  font-size: 0.8rem;
+}
+
+.rule-container-badge {
+  padding: 2px 6px;
+  background: var(--btn);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rule-toggle {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.rule-delete-btn {
+  padding: 4px 8px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 3px;
+
+  &:hover {
+    color: var(--text);
+    background: var(--btn-hover);
+  }
+}

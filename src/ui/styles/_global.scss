@@ -1,0 +1,99 @@
+@import "variables";
+
+// CSS custom properties — theme layer
+:root {
+  --bg: #{$color-bg};
+  --surface: #{$color-surface};
+  --text: #{$color-text};
+  --text-secondary: #{$color-text-secondary};
+  --text-muted: #{$color-text-muted};
+  --border: #{$color-border};
+  --btn: #{$color-btn};
+  --btn-hover: #{$color-btn-hover};
+  --btn-icon: #{$color-btn-icon};
+  --accent: #{$color-accent};
+  --accent-hover: #{$color-accent-hover};
+  --danger: #{$color-danger};
+  --focus: #{$color-focus};
+  --focus-hover: #{$color-focus-hover};
+  --shadow: #{$color-shadow};
+  --toast-bg: #{$color-toast-bg};
+  --toast-text: #{$color-toast-text};
+  --overlay: #{$color-overlay};
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b22;
+    --surface: #2b2a33;
+    --text: #fbfbfe;
+    --text-secondary: #cfcfd8;
+    --text-muted: #8f8f9d;
+    --border: #3a3944;
+    --btn: #3a3944;
+    --btn-hover: #4a4955;
+    --btn-icon: #cfcfd8;
+    --accent: #2ac065;
+    --accent-hover: #1fa352;
+    --danger: #ff6680;
+    --focus: #0a84ff;
+    --focus-hover: #0060df;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --toast-bg: #3a3944;
+    --toast-text: #cfcfd8;
+    --overlay: rgba(0, 0, 0, 0.65);
+  }
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 87.5%; // 14px base — compact for popup
+  color-scheme: light dark;
+}
+
+html, body {
+  min-width: 300px;
+  min-height: 370px;
+  font-family: $font-family;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  font-size: 1rem;
+  overflow-x: hidden;
+}
+
+button {
+  cursor: pointer;
+  text-align: center;
+  padding: 0.2rem 0.8rem;
+  font-family: $font-family;
+  font-size: 1rem;
+  border: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  background-color: var(--btn);
+  color: var(--text);
+  line-height: 0;
+
+  &:hover {
+    background-color: var(--btn-hover);
+  }
+
+  svg {
+    height: 18px;
+    width: 18px;
+    fill: var(--btn-icon);
+  }
+}
+
+input, select {
+  font-family: $font-family;
+  color: var(--text);
+  background: var(--surface);
+}

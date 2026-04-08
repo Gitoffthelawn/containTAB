@@ -1,0 +1,13 @@
+@import "variables";
+@import "global";
+@import "loader";
+@import "toast";
+@import "navigator";
+@import "rules";
+@import "containers";
+@import "settings";
+@import "prompt-dialog";
+
+.template {
+  display: none;
+}

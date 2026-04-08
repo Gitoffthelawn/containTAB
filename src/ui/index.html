@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>containTAB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="index.css"/>
+</head>
+
+<body>
+
+<div class="loader"></div>
+<div class="toast hide"></div>
+
+<!-- Main Screen: 3 navigation cards -->
+<div id="main-screen" class="screen active">
+  <h1 class="app-title">containTAB</h1>
+  <div class="nav-cards">
+    <button class="nav-card" data-target="rules">
+      <svg class="nav-card-icon" viewBox="0 0 24 24" width="32" height="32">
+        <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+      </svg>
+      <span class="nav-card-label">Rules</span>
+      <span class="nav-card-badge" id="rules-badge">0</span>
+    </button>
+    <button class="nav-card" data-target="containers">
+      <svg class="nav-card-icon" viewBox="0 0 24 24" width="32" height="32">
+        <path d="M20 7l-8-4-8 4v10l8 4 8-4V7zm-8 11l-6-3V9l6 3v6zm1-7.5L7.5 7.5 12 5l5.5 2.75L12 10.5zM19 15l-6 3v-6l6-3v6z"/>
+      </svg>
+      <span class="nav-card-label">Containers</span>
+      <span class="nav-card-badge" id="containers-badge">0</span>
+    </button>
+    <button class="nav-card" data-target="settings">
+      <svg class="nav-card-icon" viewBox="0 0 24 24" width="32" height="32">
+        <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+      </svg>
+      <span class="nav-card-label">Settings</span>
+    </button>
+  </div>
+</div>
+
+<!-- Sub Screen: Rules -->
+<div id="rules-screen" class="screen hide">
+  <div class="sub-header">
+    <button class="back-button" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+    <h2 class="sub-title">Rules</h2>
+  </div>
+  <div class="sub-body" id="rules-content"></div>
+</div>
+
+<!-- Sub Screen: Containers -->
+<div id="containers-screen" class="screen hide">
+  <div class="sub-header">
+    <button class="back-button" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+    <h2 class="sub-title">Containers</h2>
+  </div>
+  <div class="sub-body" id="containers-content"></div>
+</div>
+
+<!-- Sub Screen: Settings -->
+<div id="settings-screen" class="screen hide">
+  <div class="sub-header">
+    <button class="back-button" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+    <h2 class="sub-title">Settings</h2>
+  </div>
+  <div class="sub-body" id="settings-content"></div>
+</div>
+
+<!-- Prompt Dialog -->
+<div class="prompt-dialog-overlay hide">
+  <div class="prompt-dialog">
+    <div class="dialog-header">
+      <h3 id="dialog-title">Confirm</h3>
+      <button class="dialog-close-button" aria-label="Close" title="Close (Esc)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          <path d="M0 0h24v24H0z" fill="none"/>
+        </svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <p id="dialog-message"></p>
+      <input type="text" class="dialog-input hide" autocomplete="off"/>
+      <div class="dialog-error" role="alert" aria-live="polite"></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="dialog-cancel-button">Cancel</button>
+      <button class="dialog-confirm-button">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>

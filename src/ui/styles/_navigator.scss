@@ -1,0 +1,108 @@
+// Navigator — Main screen cards + sub screen layout
+
+.screen {
+  &.hide { display: none; }
+  &.active { display: block; }
+}
+
+// Main screen
+#main-screen {
+  padding: 16px;
+  text-align: center;
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.nav-cards {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  min-width: 90px;
+  line-height: normal;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: var(--text-muted);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  svg {
+    fill: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.nav-card-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.nav-card-badge {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--btn);
+  border-radius: 10px;
+  padding: 1px 8px;
+  min-width: 24px;
+}
+
+// Sub screen header
+.sub-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--btn);
+  }
+
+  svg {
+    fill: var(--text-secondary);
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.sub-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sub-body {
+  padding: 12px;
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
+}

@@ -1,0 +1,129 @@
+// Settings section
+
+.settings-form {
+  max-width: 400px;
+}
+
+.settings-section {
+  margin-bottom: 16px;
+}
+
+.settings-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-item {
+  margin-bottom: 10px;
+  padding-left: 4px;
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+}
+
+.settings-checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.settings-description {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  padding-left: 20px;
+}
+
+.settings-text-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: $font-mono;
+  margin-top: 4px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus);
+  }
+
+  &:disabled {
+    background: var(--btn);
+  }
+}
+
+.settings-radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.settings-radio-option {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+
+  input[type="radio"] {
+    cursor: pointer;
+  }
+}
+
+// Action buttons
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-reset-btn,
+.settings-cancel-btn,
+.settings-save-btn {
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: normal;
+}
+
+.settings-save-btn {
+  background: var(--accent);
+  color: #fff;
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+}
+
+.settings-cancel-btn {
+  background: var(--btn);
+  &:hover { background: var(--btn-hover); }
+}
+
+.settings-reset-btn {
+  background: none;
+  color: var(--text-muted);
+  &:hover { color: var(--text); }
+}
