@@ -57,7 +57,6 @@ html {
 }
 
 html, body {
-  min-height: 370px;
   font-family: $font-family;
   color: var(--text);
   background: var(--bg);
@@ -65,7 +64,7 @@ html, body {
 
 body {
   font-size: 1rem;
-  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 button {

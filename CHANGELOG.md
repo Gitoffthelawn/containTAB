@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] - 2026-04-09
+
+### Changed
+- Unified test runner: jest → vitest (232 tests)
+- Rule input: container dropdown replaced with text input for container name
+- Help: inline toggle replaced with dedicated sub-screen
+- Rule list sorted by container name, then host
+- Popup height: auto-grow with max-height = screen height / 3
+- Matching terminology: "regex" corrected to "fragment" (zero regex, uses `hostname.includes`)
+- Documentation reduced from 11,488 to 1,837 lines (-84%)
+
+### Added
+- Lifetime toggle button on each rule row (temp/keep)
+- Filter dropdown moved to top of rules section
+- Pure functions extracted to core: `isRedirectable()`, `canNavigateTo()`, `targetContainer()`, `hasRules()`
+- 10 new tests for extracted functions
+- 2 skills extracted: handle-debug, module-boundary
+
+### Fixed
+- Empty `cookieStoreId` silently skipped rule match — now creates container on match
+- In-memory tab count lost on restart — replaced with live `browser.tabs.query`
+- `33vh` popup height collapsed in Firefox — uses `window.screen.height / 3`
+- Dead code removed: `ExtendedURL/`, `filterByKey`, `v2/`
+
 ## [0.1.2] - 2026-04-08
 
 ### Fixed

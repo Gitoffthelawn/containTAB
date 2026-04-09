@@ -1,8 +1,7 @@
 /**
- * SettingsSection — Global preferences form.
+ * SettingsSection — Global preferences form with auto-save.
  *
- * Mirrors the old GlobalPreferences pattern:
- * load from PreferenceStorage, render form, save on button click.
+ * Each field change writes to PreferenceStorage immediately.
  * Conditional fields: defaultContainer toggle controls sub-fields.
  */
 
@@ -22,7 +21,6 @@ class SettingsSection {
   constructor() {
     this.container = qs('#settings-content');
     this.preferences = {};
-    this.savedPreferences = {};
     this.loaded = false;
   }
 
@@ -36,7 +34,6 @@ class SettingsSection {
   async loadPreferences() {
     try {
       this.preferences = await PreferenceStorage.getAll(true);
-      this.savedPreferences = {...this.preferences};
       this.loaded = true;
     } catch (err) {
       showToast(`Failed to load settings: ${err}`);
@@ -90,31 +87,17 @@ class SettingsSection {
       ),
     ]));
 
-    // Action buttons
+    // Reset button only
     const actions = ce('div');
     actions.className = 'settings-actions';
 
     const resetBtn = ce('button');
     resetBtn.type = 'button';
     resetBtn.className = 'settings-reset-btn';
-    resetBtn.textContent = 'Reset';
+    resetBtn.textContent = 'Reset to defaults';
     resetBtn.addEventListener('click', () => this.handleReset());
 
-    const cancelBtn = ce('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'settings-cancel-btn';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', () => this.handleCancel());
-
-    const saveBtn = ce('button');
-    saveBtn.type = 'button';
-    saveBtn.className = 'settings-save-btn';
-    saveBtn.textContent = 'Save';
-    saveBtn.addEventListener('click', () => this.handleSave());
-
     actions.appendChild(resetBtn);
-    actions.appendChild(cancelBtn);
-    actions.appendChild(saveBtn);
     form.appendChild(actions);
 
     this.container.appendChild(form);
@@ -148,6 +131,7 @@ class SettingsSection {
     checkbox.id = `pref-${name}`;
     checkbox.name = name;
     checkbox.checked = !!this.pref(name);
+    checkbox.addEventListener('change', () => this.savePref(name, checkbox.checked));
 
     const labelText = ce('span');
     labelText.textContent = label;
@@ -180,6 +164,7 @@ class SettingsSection {
     input.className = 'settings-text-input';
     input.value = this.pref(name) || '';
     input.disabled = disabled;
+    input.addEventListener('change', () => this.savePref(name, input.value));
 
     const desc = ce('div');
     desc.className = 'settings-description';
@@ -215,6 +200,9 @@ class SettingsSection {
       radio.value = choice.value;
       radio.checked = currentValue === choice.value;
       radio.disabled = disabled;
+      radio.addEventListener('change', () => {
+        if (radio.checked) this.savePref(name, choice.value);
+      });
 
       const text = ce('span');
       text.textContent = choice.label;
@@ -256,50 +244,25 @@ class SettingsSection {
     update();
   }
 
-  // --- Save / Cancel / Reset ---
+  // --- Save / Reset ---
 
-  async handleSave() {
-    showLoader();
+  async savePref(name, value) {
+    // validate container name template
+    if (name === 'defaultContainer.containerName') {
+      if (!value || !value.trim()) {
+        showToast('Container name cannot be empty');
+        return;
+      }
+    }
 
     try {
-      const formData = {};
-
-      // Boolean prefs
-      ['keepOldTabs', 'defaultContainer'].forEach(name => {
-        const el = qs(`#pref-${name}`);
-        if (el) formData[name] = {value: el.checked};
-      });
-
-      // String prefs
-      const nameInput = qs('[name="defaultContainer.containerName"]');
-      if (nameInput && !nameInput.disabled) {
-        formData['defaultContainer.containerName'] = {value: nameInput.value};
-      }
-
-      // Radio prefs
-      const lifetimeRadio = qs('[name="defaultContainer.lifetime"]:checked');
-      if (lifetimeRadio && !lifetimeRadio.disabled) {
-        formData['defaultContainer.lifetime'] = {value: lifetimeRadio.value};
-      }
-
-      await PreferenceStorage.setAll(formData);
-
-      this.preferences = await PreferenceStorage.getAll(true);
-      this.savedPreferences = {...this.preferences};
-
-      hideLoader();
-      showToast('Settings saved');
-      console.info('containTAB: settings saved');
+      this.preferences[name] = value;
+      await PreferenceStorage.setAll({[name]: {value}});
+      console.info('containTAB: setting saved:', name, '=', value);
+      if (name === 'defaultContainer') this.render();
     } catch (err) {
-      hideLoader();
       showToast(`Save failed: ${err}`);
     }
-  }
-
-  handleCancel() {
-    this.preferences = {...this.savedPreferences};
-    this.render();
-    showToast('Changes discarded');
   }
 
   async handleReset() {
@@ -316,7 +279,6 @@ class SettingsSection {
       await PreferenceStorage.setAll(defaultData);
 
       this.preferences = await PreferenceStorage.getAll(true);
-      this.savedPreferences = {...this.preferences};
       this.render();
 
       hideLoader();

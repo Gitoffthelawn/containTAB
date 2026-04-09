@@ -1,44 +1,11 @@
 // Containers section
 
-.containers-create-form {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.containers-name-input {
-  flex: 1;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.85rem;
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus);
-  }
-}
-
-.containers-create-btn {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1;
-  background: var(--accent);
-  color: #fff;
-
-  &:hover {
-    background: var(--accent-hover);
-  }
-}
+.containers-create-form { @include section-add-form; }
+.containers-name-input { @include section-input; }
+.containers-create-btn { @include section-add-btn; }
 
 // Container list
-.containers-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.containers-list { @include section-list; }
 
 .container-row {
   display: grid;
@@ -95,16 +62,4 @@
   font-size: 0.75rem;
 }
 
-.container-delete-btn {
-  padding: 4px 8px;
-  background: none;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  line-height: 1;
-  border-radius: 3px;
-
-  &:hover {
-    color: var(--text);
-    background: var(--btn-hover);
-  }
-}
+.container-delete-btn { @include section-delete-btn; }

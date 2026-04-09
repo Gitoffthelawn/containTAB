@@ -11,6 +11,49 @@
   text-align: center;
 }
 
+.main-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.help-btn {
+  position: absolute;
+  right: 0;
+  background: none;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 0;
+
+  svg { fill: var(--text-muted); width: 18px; height: 18px; }
+  &:hover { background: var(--btn); }
+  &:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+}
+
+.help-text {
+  font-size: 0.85rem;
+  line-height: 1.6;
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 12px 0 4px;
+    color: var(--text);
+    &:first-child { margin-top: 0; }
+  }
+
+  code {
+    font-family: $font-mono;
+    background: var(--btn);
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 0.8rem;
+  }
+
+  p { margin: 2px 0; }
+}
+
 .app-title {
   font-size: 1.2rem;
   font-weight: 600;
@@ -88,6 +131,11 @@
     background: var(--btn);
   }
 
+  &:focus {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
   svg {
     fill: var(--text-secondary);
     width: 20px;
@@ -103,6 +151,5 @@
 
 .sub-body {
   padding: 12px;
-  max-height: calc(100vh - 44px);
   overflow-y: auto;
 }

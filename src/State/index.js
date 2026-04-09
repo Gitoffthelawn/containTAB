@@ -11,7 +11,7 @@ class State {
 
   set(key, value) {
     this.state[key] = value;
-    this.listeners.forEach((fn) => fn.call(null, this.state));
+    this.listeners.forEach((fn) => fn.call(null, this.state, key));
     return this.state;
   }
 

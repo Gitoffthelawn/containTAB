@@ -18,15 +18,19 @@ class ContainersSection {
     this.identities = [];
     this.rules = {};
     this.editingId = null;
+    this.ruleCountCache = {};
 
     State.addListener(this.update.bind(this));
   }
 
-  update(state) {
-    let changed = false;
-    if (state.identities) { this.identities = state.identities; changed = true; }
-    if (state.urlMaps) { this.rules = state.urlMaps; changed = true; }
-    if (changed) this.render();
+  update(state, changedKey) {
+    if (changedKey === 'identities') { this.identities = state.identities; this.render(); }
+    else if (changedKey === 'urlMaps') { this.rules = state.urlMaps; this.render(); }
+    else if (!changedKey) {
+      this.identities = state.identities || [];
+      this.rules = state.urlMaps || {};
+      this.render();
+    }
   }
 
   onShow() {
@@ -37,6 +41,7 @@ class ContainersSection {
     if (!this.container) return;
     this.container.textContent = '';
 
+    this.buildRuleCountCache();
     this.container.appendChild(this.buildCreateForm());
     this.container.appendChild(this.buildContainerList());
   }
@@ -75,10 +80,15 @@ class ContainersSection {
       return;
     }
 
+    nameInput.disabled = true;
+
     ContextualIdentity.create(name).then(() => {
       nameInput.value = '';
+      nameInput.disabled = false;
+      nameInput.focus();
       console.info('containTAB: container created:', name);
     }).catch(err => {
+      nameInput.disabled = false;
       showToast(`Failed to create: ${err}`);
     });
   }
@@ -96,10 +106,17 @@ class ContainersSection {
     return list;
   }
 
+  buildRuleCountCache() {
+    this.ruleCountCache = {};
+    for (const r of Object.values(this.rules)) {
+      if (r.cookieStoreId) {
+        this.ruleCountCache[r.cookieStoreId] = (this.ruleCountCache[r.cookieStoreId] || 0) + 1;
+      }
+    }
+  }
+
   countRulesForContainer(cookieStoreId) {
-    return Object.values(this.rules)
-      .filter(r => r.cookieStoreId === cookieStoreId)
-      .length;
+    return this.ruleCountCache[cookieStoreId] || 0;
   }
 
   buildContainerRow(identity) {
@@ -163,10 +180,8 @@ class ContainersSection {
         lifetimeSelect.appendChild(opt);
       });
 
-      // Disable until loaded, attach listener after load completes
-      lifetimeSelect.disabled = true;
+      // Load async, attach listener after load
       this.loadLifetime(identity.cookieStoreId, lifetimeSelect).then(() => {
-        lifetimeSelect.disabled = false;
         lifetimeSelect.addEventListener('change', () => {
           this.handleLifetimeChange(identity.cookieStoreId, lifetimeSelect.value);
         });
@@ -222,6 +237,7 @@ class ContainersSection {
 
   handleRename(identity, newName) {
     this.editingId = null;
+    newName = (newName || '').trim();
 
     if (!newName || newName === identity.name) {
       this.render();

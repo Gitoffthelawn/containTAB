@@ -16,7 +16,7 @@ import ContextualIdentity from './ContextualIdentity';
 import Tabs from './Tabs';
 import PreferenceStorage from './Storage/PreferenceStorage';
 import { buildDefaultContainer } from './defaultContainer';
-import { match, isLocked, needsRedirect } from './core/index.js';
+import { match, isLocked, needsRedirect, isRedirectable, targetContainer } from './core/index.js';
 
 const IGNORED_URLS_REGEX = /^(about|moz-extension|file|javascript|data|chrome):/;
 
@@ -57,6 +57,8 @@ const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) =
       if (!cookieStoreId && openerTabId) {
         Tabs.update(createdTab.id, { openerTabId });
       }
+    }).catch(err => {
+      console.error('containTAB: failed to create tab:', err);
     });
 
     PreferenceStorage.get('keepOldTabs').then(({ value }) => {
@@ -66,6 +68,8 @@ const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) =
     }).catch(() => {
       Tabs.remove(currentTabId);
     });
+  }).catch(err => {
+    console.error('containTAB: failed to get tab for redirect:', err);
   });
 
   return { cancel: true };
@@ -84,13 +88,9 @@ async function handle(url, tabId) {
     return {};
   }
 
-  // Step 2: prevent redirect loops
-  const creatingUrl = creatingTabs[tabId];
-  if (creatingUrl === url) {
-    return {};
-  } else if (creatingUrl) {
+  // Step 2: prevent redirect loops (clean up stale entry)
+  if (creatingTabs[tabId] && creatingTabs[tabId] !== url) {
     delete creatingTabs[tabId];
-    return {};
   }
 
   const [preferences, currentTab] = await Promise.all([
@@ -98,34 +98,48 @@ async function handle(url, tabId) {
     Tabs.get(tabId),
   ]);
 
-  // Step 3: skip incognito
-  if (currentTab.incognito) {
+  // Step 3: skip if not redirectable (incognito or being created)
+  if (!isRedirectable(currentTab, creatingTabs, url)) {
     return {};
   }
 
-  // Step 4: CONTAINER LOCK — tab already in container → skip all matching
+  // Step 4: CONTAINER LOCK — tab already in container → locked, done
   if (isLocked(currentTab.cookieStoreId)) {
     return {};
   }
 
-  // Step 5: try rule match
+  // Step 5: try rule match (tab is in firefox-default, needs assignment)
   const allRules = await Storage.getAll();
   const rulesArray = Object.keys(allRules).map(key => allRules[key]);
   const matchedRule = match(url, rulesArray);
 
-  if (matchedRule && matchedRule.cookieStoreId) {
-    // verify target container still exists
+  if (matchedRule) {
+    // find or create target container
     const identities = await ContextualIdentity.getAll();
-    const targetIdentity = identities.find(
-      (id) => id.cookieStoreId === matchedRule.cookieStoreId
-    );
+    const existingIdentity = matchedRule.cookieStoreId
+      ? targetContainer(matchedRule, identities)
+      : null;
 
-    if (!targetIdentity) {
-      // orphaned rule — target container deleted
-      return {};
+    let targetCookieStoreId;
+
+    if (existingIdentity) {
+      targetCookieStoreId = existingIdentity.cookieStoreId;
+    } else {
+      // container missing (empty, deleted, or untilLastTab) — create it
+      const containerName = matchedRule.containerName || matchedRule.host;
+      try {
+        const newContainer = await ContextualIdentity.create(containerName);
+        targetCookieStoreId = newContainer.cookieStoreId;
+        await Storage.set({
+          ...matchedRule,
+          cookieStoreId: targetCookieStoreId,
+        });
+        console.info('containTAB: created container for rule:', matchedRule.host, '→', containerName);
+      } catch (err) {
+        console.error('containTAB: failed to create container:', err);
+        return {};
+      }
     }
-
-    const targetCookieStoreId = targetIdentity.cookieStoreId;
 
     if (needsRedirect(currentTab.cookieStoreId, targetCookieStoreId)) {
       return createTab(

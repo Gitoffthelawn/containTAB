@@ -42,4 +42,29 @@ export function needsRedirect(currentCookieStoreId, targetCookieStoreId) {
   return currentCookieStoreId !== targetCookieStoreId;
 }
 
+/**
+ * Check if tab can be redirected (not incognito, not being created by us).
+ *
+ * @param {{incognito: boolean}} tab
+ * @param {object} creatingTabs - { tabId: url } map
+ * @param {string} url - current request URL
+ * @returns {boolean}
+ */
+export function isRedirectable(tab, creatingTabs, url) {
+  if (tab.incognito) return false;
+  const creatingUrl = creatingTabs[tab.id];
+  if (creatingUrl === url) return false;
+  return true;
+}
+
+/**
+ * Tab cannot navigate to a different container. Always false.
+ * New tab required instead. Exists for schema completeness.
+ *
+ * @returns {boolean}
+ */
+export function canNavigateTo() {
+  return false;
+}
+
 export { NO_CONTAINER_ID };

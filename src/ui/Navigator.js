@@ -27,6 +27,12 @@ class Navigator {
     qsAll('.back-button').forEach(btn => {
       btn.addEventListener('click', () => this.showMain());
     });
+
+    // Help → sub screen
+    const helpBtn = qs('#help-toggle');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', () => this.showSub('help'));
+    }
   }
 
   /**

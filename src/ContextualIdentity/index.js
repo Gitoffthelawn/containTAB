@@ -24,10 +24,17 @@ class ContextualIdentities {
 
   constructor() {
     this.contextualIdentities = browser.contextualIdentities;
-    this.addOnRemoveListener((changeInfo) => {
+    this.addOnRemoveListener(async (changeInfo) => {
       const cookieStoreId = changeInfo.contextualIdentity.cookieStoreId;
+      // check if container was untilLastTab — keep rules for re-creation on next match
+      const lifetime = await PreferenceStorage.get(
+        `containers.${cookieStoreId}.lifetime`,
+        true,
+      ).catch(() => 'forever');
       this.cleanPreferences(cookieStoreId);
-      this.cleanMaps(cookieStoreId);
+      if (lifetime !== 'untilLastTab') {
+        this.cleanMaps(cookieStoreId);
+      }
     });
   }
 

@@ -7,7 +7,7 @@
  * Schema: Container.schema.json x-naming
  */
 
-import { extractHostname, extractDomain, extractTld } from './url.js';
+import { extract } from './url-ast.js';
 
 /**
  * Format a container name template with URL context.
@@ -19,14 +19,14 @@ import { extractHostname, extractDomain, extractTld } from './url.js';
  * @returns {string}
  */
 export function formatName(template, url) {
-  const hostname = extractHostname(url);
+  const { hostname, domain, tld } = extract(url, ['hostname', 'domain', 'tld']);
   if (!hostname) return template;
 
   const context = {
-    domain: extractDomain(hostname),
+    domain: domain || hostname,
     fqdn: hostname,
     host: hostname,
-    tld: extractTld(hostname),
+    tld: tld || hostname,
     ms: String(Date.now()),
   };
 

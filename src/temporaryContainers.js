@@ -1,8 +1,10 @@
 /**
  * temporaryContainers.js — Container lifecycle management.
  *
- * Tracks tabs per container, auto-deletes temporary containers
- * when last tab closes (lifetime === 'untilLastTab').
+ * Auto-deletes temporary containers when last tab closes
+ * (lifetime === 'untilLastTab').
+ *
+ * Uses browser.tabs.query for real-time tab count — no in-memory state.
  *
  * Schema: Container.schema.json x-lifecycle
  */
@@ -11,46 +13,47 @@ import ContextualIdentities from './ContextualIdentity';
 import PreferenceStorage from './Storage/PreferenceStorage';
 
 /**
- * Track tabs per context for fast counting.
- * tabId → cookieStoreId
+ * Count tabs in a container via browser API (real-time, survives restart).
+ * @param {string} cookieStoreId
+ * @returns {Promise<number>}
  */
-let tabContexts = {};
-
-function countTabsInContext(contextId) {
-  if (!contextId) throw 'Must provide contextId';
-  return Object.keys(tabContexts)
-    .filter((tabId) => tabContexts[tabId] === contextId)
-    .length;
+function countTabsInContext(cookieStoreId) {
+  return browser.tabs.query({ cookieStoreId }).then(tabs => tabs.length);
 }
 
 /**
- * Register a new tab in its container context.
+ * Register a new tab (no-op, kept for API compatibility).
  * @param {object} tab
  */
 export function onTabCreated(tab) {
-  tabContexts[tab.id] = tab.cookieStoreId;
+  // no-op: tab count is queried live via browser.tabs.query
+  console.debug('containTAB: tab created:', tab.id, tab.cookieStoreId);
 }
 
 /**
  * Handle tab removal: check if container should auto-delete.
  * @param {number|string} tabId
+ * @param {{windowId: number, isWindowClosing: boolean}} removeInfo
  */
-export async function onTabRemoved(tabId) {
-  const tabContextId = tabContexts[tabId];
-  if (!tabContextId) return;
+export async function onTabRemoved() {
+  // Get the tab's container before it's gone — use the removeInfo
+  // Firefox doesn't give us the tab object in onRemoved, so we need
+  // to query remaining tabs per container and check which ones are empty.
+  // Instead, we scan all temporary containers for zero tabs.
+  const [allPrefs, containers] = await Promise.all([
+    PreferenceStorage.getAll(true),
+    browser.contextualIdentities.query({}),
+  ]);
 
-  delete tabContexts[tabId];
+  for (const container of containers) {
+    const cid = container.cookieStoreId;
+    if (allPrefs[`containers.${cid}.lifetime`] !== 'untilLastTab') continue;
 
-  if (countTabsInContext(tabContextId) > 0) return;
-
-  const contextLifetime = await PreferenceStorage.get(
-    `containers.${tabContextId}.lifetime`,
-    true
-  );
-
-  if (contextLifetime === 'untilLastTab') {
-    console.info('containTAB: removing temporary container:', tabContextId);
-    return ContextualIdentities.remove(tabContextId);
+    const count = await countTabsInContext(cid);
+    if (count === 0) {
+      console.info('containTAB: removing temporary container:', container.name);
+      ContextualIdentities.remove(cid);
+    }
   }
 }
 
@@ -63,7 +66,6 @@ export function cleanUpTemporaryContainers() {
     browser.tabs.query({}),
     PreferenceStorage.getAll(true),
   ]).then(([containers, tabs, preferences]) => {
-    // Build active tab counts per container
     const activeCookieStoreIds = {};
     for (const tab of tabs) {
       activeCookieStoreIds[tab.cookieStoreId] = true;
@@ -72,7 +74,6 @@ export function cleanUpTemporaryContainers() {
     const knownCookieStoreIds = {};
     const removePromises = [];
 
-    // Remove inactive temporary containers
     for (const container of containers) {
       const cid = container.cookieStoreId;
       knownCookieStoreIds[cid] = true;
@@ -84,7 +85,6 @@ export function cleanUpTemporaryContainers() {
       }
     }
 
-    // Remove orphaned container preferences
     const orphanedPrefs = Object.keys(preferences)
       .filter(key => key.startsWith('containers.'))
       .filter(key => {

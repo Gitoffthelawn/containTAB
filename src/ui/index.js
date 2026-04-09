@@ -15,8 +15,6 @@ import Navigator from './Navigator';
 import RulesSection from './RulesSection';
 import ContainersSection from './ContainersSection';
 import SettingsSection from './SettingsSection';
-import './PromptDialog';
-
 // Initialize state
 State.setState({
   identities: [],
@@ -67,6 +65,9 @@ Tabs.query({active: true}).then(tabs => {
     }
   });
 });
+
+// Popup max-height = 1/3 of screen height
+document.body.style.maxHeight = Math.floor(window.screen.height / 3) + 'px';
 
 // Register sections with Navigator
 Navigator.register('rules', RulesSection);
