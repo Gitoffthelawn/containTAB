@@ -1,11 +1,11 @@
-@import "variables";
-@import "global";
-@import "loader";
-@import "toast";
-@import "navigator";
-@import "rules";
-@import "containers";
-@import "settings";
+@use "variables" as *;
+@use "global";
+@use "loader";
+@use "toast";
+@use "navigator";
+@use "rules";
+@use "containers";
+@use "settings";
 .template {
   display: none;
 }

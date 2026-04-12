@@ -11,6 +11,19 @@
 
 import ContextualIdentities from './ContextualIdentity';
 import PreferenceStorage from './Storage/PreferenceStorage';
+import { forgetNewTab } from './containers';
+
+/**
+ * Temporary container name pattern: "<baseName>-NNN" where NNN is 3+ digits.
+ * Produced by core/naming.js#nextSequentialName for every Rule 2 container.
+ * Any container matching this pattern is containTAB-managed and may be
+ * reaped when empty, regardless of lifetime preference state.
+ */
+const TEMP_NAME_RE = /-\d{3,}$/;
+
+function isTempContainer(name) {
+  return typeof name === 'string' && TEMP_NAME_RE.test(name);
+}
 
 /**
  * Count tabs in a container via browser API (real-time, survives restart).
@@ -22,24 +35,18 @@ function countTabsInContext(cookieStoreId) {
 }
 
 /**
- * Register a new tab (no-op, kept for API compatibility).
- * @param {object} tab
- */
-export function onTabCreated(tab) {
-  // no-op: tab count is queried live via browser.tabs.query
-  console.debug('containTAB: tab created:', tab.id, tab.cookieStoreId);
-}
-
-/**
  * Handle tab removal: check if container should auto-delete.
  * @param {number|string} tabId
  * @param {{windowId: number, isWindowClosing: boolean}} removeInfo
  */
-export async function onTabRemoved() {
-  // Get the tab's container before it's gone — use the removeInfo
-  // Firefox doesn't give us the tab object in onRemoved, so we need
-  // to query remaining tabs per container and check which ones are empty.
-  // Instead, we scan all temporary containers for zero tabs.
+export async function onTabRemoved(tabId) {
+  // Forget any pending new-tab marker so the set doesn't leak
+  if (typeof tabId === 'number') forgetNewTab(tabId);
+
+  // A container is removable when it has zero tabs AND
+  // (lifetime === 'untilLastTab' OR name matches the temp container pattern).
+  // The name branch catches orphans from earlier buggy paths where lifetime
+  // persistence was skipped, and covers all Rule 2 containers uniformly.
   const [allPrefs, containers] = await Promise.all([
     PreferenceStorage.getAll(true),
     browser.contextualIdentities.query({}),
@@ -47,11 +54,13 @@ export async function onTabRemoved() {
 
   for (const container of containers) {
     const cid = container.cookieStoreId;
-    if (allPrefs[`containers.${cid}.lifetime`] !== 'untilLastTab') continue;
+    const isUntilLast = allPrefs[`containers.${cid}.lifetime`] === 'untilLastTab';
+    const isTemp = isTempContainer(container.name);
+    if (!isUntilLast && !isTemp) continue;
 
     const count = await countTabsInContext(cid);
     if (count === 0) {
-      console.info('containTAB: removing temporary container:', container.name);
+      console.info('containTAB: removing container:', container.name);
       ContextualIdentities.remove(cid);
     }
   }
@@ -78,11 +87,17 @@ export function cleanUpTemporaryContainers() {
       const cid = container.cookieStoreId;
       knownCookieStoreIds[cid] = true;
 
-      if (!activeCookieStoreIds[cid] &&
-          preferences[`containers.${cid}.lifetime`] === 'untilLastTab') {
-        console.warn('containTAB: removing leftover container:', container.name);
-        removePromises.push(ContextualIdentities.remove(cid));
-      }
+      if (activeCookieStoreIds[cid]) continue;
+
+      // Remove when: untilLastTab preference set, OR name matches the temp
+      // container pattern. The name branch catches orphans from earlier
+      // buggy paths that skipped lifetime persistence.
+      const isUntilLast = preferences[`containers.${cid}.lifetime`] === 'untilLastTab';
+      const isTemp = isTempContainer(container.name);
+      if (!isUntilLast && !isTemp) continue;
+
+      console.warn('containTAB: removing leftover container:', container.name);
+      removePromises.push(ContextualIdentities.remove(cid));
     }
 
     const orphanedPrefs = Object.keys(preferences)

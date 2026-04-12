@@ -1,3 +1,4 @@
+@use "variables" as *;
 // Containers section
 
 .containers-create-form { @include section-add-form; }

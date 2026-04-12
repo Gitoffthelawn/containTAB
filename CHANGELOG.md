@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.2] - 2026-04-12
+
+### Changed
+- Build system: declare `"type": "module"` in package.json; rename `webpack.{common,dev,prod}.js` → `.cjs`
+- Babel-loader: add `resolve: { fullySpecified: false }` to handle ESM bare specifiers
+- Test count: 232 → 362 (fingerprint subsystem tests added)
+
+### Added
+- Vitest v8 coverage reporter (`npm run test -- --coverage`); output to `coverage/`
+- `src/fingerprint/prng.js` — PRNG moved out of `src/core/` into fingerprint subsystem
+
+### Fixed
+- `MODULE_TYPELESS_PACKAGE_JSON` webpack warning eliminated
+- `src/core/index.js`: removed `createPRNG` export (prng no longer a core concern)
+- Fingerprint hooks in `ContextualIdentity/index.js` marked `DISABLED` explicitly
+
 ## [0.2.0] - 2026-04-09
 
 ### Changed

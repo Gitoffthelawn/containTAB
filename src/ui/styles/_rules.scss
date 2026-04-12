@@ -1,3 +1,4 @@
+@use "variables" as *;
 // Rules section
 
 .rules-add-form { @include section-add-form; }

@@ -11,9 +11,12 @@
 
 import './manifest.json';
 import '../static/icons/icon.png';
-import { tabUpdatedListener, webRequestListener } from './containers';
+import { tabUpdatedListener, webRequestListener, tabCreatedListener } from './containers';
 import { messageExternalListener } from './messageExternalListener';
-import { cleanUpTemporaryContainers, onTabCreated, onTabRemoved } from './temporaryContainers';
+import { cleanUpTemporaryContainers, onTabRemoved } from './temporaryContainers';
+// fingerprint subsystem imports — disabled, pending Gecko-layer integration
+// import { registerAll } from './fingerprint/content-script-registry.js';
+// import { installHeaderSpoofer } from './fingerprint/header-spoofer.js';
 
 browser.webRequest.onBeforeRequest.addListener(
   webRequestListener,
@@ -26,8 +29,14 @@ browser.runtime.onMessageExternal.addListener(
 );
 
 browser.tabs.onUpdated.addListener(tabUpdatedListener);
-browser.tabs.onCreated.addListener(onTabCreated);
+browser.tabs.onCreated.addListener(tabCreatedListener);
 browser.tabs.onRemoved.addListener(onTabRemoved);
 
 // Clean up leftover temporary containers at startup
 cleanUpTemporaryContainers();
+
+// fingerprint subsystem — disabled, pending Gecko-layer integration
+// registerAll().catch((err) => {
+//   console.error('containTAB: registerAll failed at startup:', err);
+// });
+// installHeaderSpoofer();

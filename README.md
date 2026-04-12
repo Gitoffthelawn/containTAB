@@ -64,7 +64,8 @@ ETP Strict mode can break site logins and payment flows inside containers. Stand
 npm ci                  # install dependencies
 npm run webpack         # dev build with --watch
 npm run web-ext         # launch Firefox with extension loaded
-npx vitest run          # run tests (232 tests)
+npx vitest run          # run tests (362 tests)
+npx vitest run --coverage  # with v8 coverage report
 npm run build           # production build + lint + test
 ```
 

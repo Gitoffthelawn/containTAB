@@ -1,5 +1,7 @@
 import HostStorage from '../Storage/HostStorage';
 import PreferenceStorage from '../Storage/PreferenceStorage';
+// fingerprint subsystem — disabled, pending Gecko-layer integration
+// import { onContainerCreated, onContainerRemoved } from '../fingerprint/index.js';
 
 export const NO_CONTAINER = {
   name: 'No Container',
@@ -32,18 +34,21 @@ class ContextualIdentities {
         true,
       ).catch(() => 'forever');
       this.cleanPreferences(cookieStoreId);
+      // DISABLED: onContainerRemoved(cookieStoreId) — fingerprint hooks decoupled, see CLAUDE.md
       if (lifetime !== 'untilLastTab') {
         this.cleanMaps(cookieStoreId);
       }
     });
   }
 
-  create(name) {
-    return this.contextualIdentities.create({
+  async create(name) {
+    const identity = await this.contextualIdentities.create({
       name: name,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       icon: 'circle',
     });
+    // DISABLED: await onContainerCreated(identity.cookieStoreId) — fingerprint hooks decoupled, see CLAUDE.md
+    return identity;
   }
 
   /**

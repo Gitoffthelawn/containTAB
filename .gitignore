@@ -33,3 +33,6 @@ web-ext-artifacts/
 /profile
 containerise.iml
 .gitignore
+
+src/fingerprint/
+src/inject/

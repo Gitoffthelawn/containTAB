@@ -1,8 +1,13 @@
 /**
  * lock.js — Container lock decision (pure function, zero browser.* dependency)
  *
- * Core invariant: tab already in a container (cookieStoreId !== 'firefox-default')
- * is LOCKED — skip all matching, no re-assignment possible.
+ * Core invariant: tab in a VALID existing container is LOCKED.
+ * - cookieStoreId === 'firefox-default' → not locked
+ * - cookieStoreId points to a deleted container (orphan) → not locked
+ * - cookieStoreId points to an existing container → locked
+ *
+ * Orphan tabs (e.g. after startup cleanup deleted their container) fall through
+ * to rule match / container rebuild, so reload naturally restores the binding.
  *
  * Schema: Tab.schema.json x-invariants, MatchResult.schema.json x-decision-tree step_3b
  */
@@ -10,14 +15,16 @@
 const NO_CONTAINER_ID = 'firefox-default';
 
 /**
- * Check if a tab is locked in a container.
- * Locked = already assigned to a non-default container.
+ * Check if a tab is locked in a valid existing container.
  *
  * @param {string} cookieStoreId - tab's current cookieStoreId
+ * @param {Set<string>} [existingContainerIds] - cookieStoreIds of currently-existing containers
  * @returns {boolean}
  */
-export function isLocked(cookieStoreId) {
-  return cookieStoreId !== NO_CONTAINER_ID;
+export function isLocked(cookieStoreId, existingContainerIds) {
+  if (cookieStoreId === NO_CONTAINER_ID) return false;
+  if (existingContainerIds && !existingContainerIds.has(cookieStoreId)) return false;
+  return true;
 }
 
 /**

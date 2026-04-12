@@ -26,6 +26,19 @@ const IGNORED_URLS_REGEX = /^(about|moz-extension|file|javascript|data|chrome):/
  */
 const creatingTabs = {};
 
+/**
+ * Track newly-created tabs awaiting their first real URL.
+ * Firefox fires tabs.onCreated with tab.url === 'about:blank'; the real
+ * URL arrives via tabs.onUpdated. When it does, we must re-decide the
+ * container (bypass isLocked), since new tabs inherit the opener's
+ * cookieStoreId by Firefox default — that is not a user choice.
+ *
+ * TTL: auto-forget after 30 s to guard against tabs that are created but
+ * never navigate (e.g. closed before first URL fires tabs.onRemoved).
+ */
+const newTabs = new Set();
+const _newTabTimers = new Map();
+
 const PREFERENCE_DEFAULTS = {
   defaultContainer: true,
   'defaultContainer.containerName': '{fqdn}',
@@ -82,7 +95,7 @@ const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) =
  * @param {number} tabId
  * @returns {Promise<object>}
  */
-async function handle(url, tabId) {
+async function handle(url, tabId, { skipLock = false } = {}) {
   // Step 1: filter ignored URLs
   if (IGNORED_URLS_REGEX.test(url)) {
     return {};
@@ -93,29 +106,34 @@ async function handle(url, tabId) {
     delete creatingTabs[tabId];
   }
 
-  const [preferences, currentTab] = await Promise.all([
+  const [preferences, currentTab, identities] = await Promise.all([
     PreferenceStorage.getAll(true).then(p => ({ ...PREFERENCE_DEFAULTS, ...p })),
     Tabs.get(tabId),
+    ContextualIdentity.getAll(),
   ]);
+
+  const existingContainerIds = new Set(identities.map(i => i.cookieStoreId));
 
   // Step 3: skip if not redirectable (incognito or being created)
   if (!isRedirectable(currentTab, creatingTabs, url)) {
     return {};
   }
 
-  // Step 4: CONTAINER LOCK — tab already in container → locked, done
-  if (isLocked(currentTab.cookieStoreId)) {
+  // Step 4: CONTAINER LOCK — tab in a valid existing container → locked, done.
+  // Orphan cookieStoreId (container was deleted) falls through to rebuild.
+  // skipLock=true used by tabs.onCreated: new tab inherits opener's container
+  // by Firefox default, which is NOT a user choice — must re-decide.
+  if (!skipLock && isLocked(currentTab.cookieStoreId, existingContainerIds)) {
     return {};
   }
 
-  // Step 5: try rule match (tab is in firefox-default, needs assignment)
+  // Step 5: try rule match (tab is in default or orphan, needs assignment)
   const allRules = await Storage.getAll();
   const rulesArray = Object.keys(allRules).map(key => allRules[key]);
   const matchedRule = match(url, rulesArray);
 
   if (matchedRule) {
     // find or create target container
-    const identities = await ContextualIdentity.getAll();
     const existingIdentity = matchedRule.cookieStoreId
       ? targetContainer(matchedRule, identities)
       : null;
@@ -154,6 +172,7 @@ async function handle(url, tabId) {
   }
 
   // Step 6 & 7: no match — check defaultContainer preference
+  // Rule 2: no match → ISOLATED container (one-tab-one-world)
   if (preferences.defaultContainer) {
     const defaultContainer = await buildDefaultContainer(preferences, url);
     const targetCookieStoreId = defaultContainer.cookieStoreId;
@@ -176,6 +195,14 @@ export const webRequestListener = (requestDetails) => {
   if (requestDetails.frameId !== 0 || requestDetails.tabId === -1) {
     return {};
   }
+  // New tab's first real URL can arrive via webRequest before tabs.onUpdated —
+  // bypass lock so Firefox's inherited cookieStoreId doesn't stick.
+  if (newTabs.has(requestDetails.tabId)) {
+    newTabs.delete(requestDetails.tabId);
+    const t = _newTabTimers.get(requestDetails.tabId);
+    if (t !== undefined) { clearTimeout(t); _newTabTimers.delete(requestDetails.tabId); }
+    return handle(requestDetails.url, requestDetails.tabId, { skipLock: true });
+  }
   return handle(requestDetails.url, requestDetails.tabId);
 };
 
@@ -183,5 +210,47 @@ export const tabUpdatedListener = (tabId, changeInfo) => {
   if (!changeInfo.url) {
     return;
   }
+  // First real URL after tabs.onCreated → bypass lock, re-decide container
+  if (newTabs.has(tabId)) {
+    newTabs.delete(tabId);
+    const t = _newTabTimers.get(tabId);
+    if (t !== undefined) { clearTimeout(t); _newTabTimers.delete(tabId); }
+    return handle(changeInfo.url, tabId, { skipLock: true });
+  }
   return handle(changeInfo.url, tabId);
+};
+
+/**
+ * tabs.onCreated listener — mark the tab as new so its first real URL
+ * (delivered later via tabs.onUpdated) re-decides the container with
+ * skipLock. Firefox fires onCreated with tab.url === 'about:blank' and
+ * the real URL arrives on onUpdated, so we cannot decide here directly.
+ * If onCreated already has a real URL, decide immediately.
+ */
+export const tabCreatedListener = (tab) => {
+  if (!tab || typeof tab.id !== 'number') return;
+  if (tab.url && !IGNORED_URLS_REGEX.test(tab.url)) {
+    return handle(tab.url, tab.id, { skipLock: true });
+  }
+  newTabs.add(tab.id);
+  // TTL guard: auto-forget if tab never fires onUpdated/onRemoved
+  const timer = setTimeout(() => {
+    newTabs.delete(tab.id);
+    _newTabTimers.delete(tab.id);
+  }, 30000);
+  _newTabTimers.set(tab.id, timer);
+};
+
+/**
+ * Forget a removed tab from the new-tabs set and creatingTabs map.
+ * Called by onTabRemoved to prevent stale entries leaking across tab ID reuse.
+ */
+export const forgetNewTab = (tabId) => {
+  newTabs.delete(tabId);
+  const timer = _newTabTimers.get(tabId);
+  if (timer !== undefined) {
+    clearTimeout(timer);
+    _newTabTimers.delete(tabId);
+  }
+  delete creatingTabs[tabId];
 };
