@@ -10,3 +10,14 @@ export const qsAll = (selector, node) => (node || document).querySelectorAll(sel
 export const ce = (tagName) => document.createElement(tagName);
 
 export const cleanHostInput = (value = '') => value.trim().toLowerCase();
+
+export function focusSoon(selectorOrElement) {
+  setTimeout(() => {
+    if (typeof document === 'undefined') return;
+    if (typeof selectorOrElement === 'string') {
+      qs(selectorOrElement)?.focus();
+    } else {
+      selectorOrElement?.focus();
+    }
+  }, 0);
+}

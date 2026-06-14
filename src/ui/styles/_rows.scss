@@ -1,0 +1,74 @@
+@use "variables" as *;
+
+.container-identity,
+.rule-container-badge {
+  display: inline-grid;
+  grid-template-columns: $row-icon-box minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-small);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.container-name,
+.container-pill-label {
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0;
+}
+
+.container-icon,
+.rule-mini-icon,
+.setting-icon {
+  display: grid;
+  place-items: center;
+  width: $row-icon-box;
+  height: $row-icon-box;
+  flex: 0 0 $row-icon-box;
+  border-radius: var(--radius-md);
+  background: var(--btn);
+  color: var(--text-muted);
+  font-size: var(--text-small);
+  font-weight: 600;
+
+  .svg-icon,
+  .nav-icon {
+    width: $row-icon-size;
+    height: $row-icon-size;
+  }
+}
+
+.container-icon-btn,
+.small-btn {
+  display: grid;
+  place-items: center;
+  width: $row-action-size;
+  height: $row-action-size;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+
+  &:hover {
+    border-color: var(--border);
+    background: var(--btn-hover);
+    color: var(--text);
+  }
+
+  .svg-icon {
+    width: $row-action-icon;
+    height: $row-action-icon;
+  }
+}

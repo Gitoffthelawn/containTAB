@@ -1,38 +1,27 @@
-# dev-only
-.claude/
-.sessions/
-CLAUDE.md
-docs/
-scripts/
-.cleanup/
-dist/
-v2/
+# IntelliJ project files
+.idea
+containerise.iml
 
-# build tools
-.babelrc
-.eslintrc
-.nvmrc
-vitest.config.js
-webpack.*.js
-
-# tests
-__tests__/
-__mocks__/
-*.spec.js
-*.test.js
-
-# artifacts
-node_modules/
-build/
-web-ext-artifacts/
-*.zip
+# dependencies
+/node_modules
 
 # misc
-.idea/
 .DS_Store
-/profile
-containerise.iml
-.gitignore
 
-src/fingerprint/
-src/inject/
+# build
+build
+dist
+web-ext-artifacts
+
+# test coverage
+coverage
+
+# Cleanup
+.cleanup
+.backup
+
+# Other
+/profile
+
+# GitNexus analyzer output
+.gitnexus

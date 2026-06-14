@@ -11,7 +11,7 @@
   color: var(--toast-text);
   z-index: 100;
   transition: bottom 0.25s ease;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
 
   &.hide {
     bottom: -10vh;

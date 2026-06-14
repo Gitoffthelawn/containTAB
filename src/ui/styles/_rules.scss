@@ -1,54 +1,266 @@
 @use "variables" as *;
 // Rules section
 
-.rules-add-form { @include section-add-form; }
+.rules-main,
+.rules-add-page,
+.rules-edit-page,
+.rules-import-page {
+  display: none;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+
+  &.active { display: flex; }
+}
+
+.rule-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: 0 1px 4px var(--shadow);
+  flex: none;
+}
+
+.rules-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+
+  .svg-icon {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    color: var(--text-muted);
+  }
+}
+
+.rules-search-input {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.rules-focus-add-btn {
+  min-width: 116px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  }
+}
 
 .rules-host-input { @include section-input; }
+
+.rule-pattern-textarea {
+  height: auto;
+  min-height: 96px;
+  padding: 8px 10px;
+  line-height: var(--line-height-tight);
+  font-family: $font-mono;
+  resize: vertical;
+}
 
 .rules-container-input {
   @include section-input;
   min-width: 100px;
-  max-width: 140px;
-}
-
-.rules-add-btn { @include section-add-btn; }
-
-// Filter
-.rules-filter {
-  margin-bottom: 8px;
-}
-
-.rules-filter-select {
   width: 100%;
-  padding: 4px 6px;
+}
+
+.rules-container-combo {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: 100%;
+
+  .rules-container-input {
+    padding-right: 30px;
+  }
+}
+
+.combo-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 30px;
+  height: 100%;
+  color: var(--text-muted);
+  background: transparent;
+  display: grid;
+  place-items: center;
+
+  .svg-icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.combo-menu {
+  display: none;
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 156px;
+  overflow-y: auto;
+  padding: 4px;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.rules-container-combo.open {
+  .rules-container-input {
+    border-color: var(--focus);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  .combo-menu {
+    display: grid;
+    gap: 2px;
+  }
+}
+
+.combo-option,
+.combo-empty {
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-small);
+}
+
+.combo-option:hover {
+  background: var(--btn);
+}
+
+.combo-option.active {
+  background: var(--btn-hover);
+}
+
+.combo-empty {
+  color: var(--text-muted);
+}
+
+.rules-add-btn,
+.rules-import-btn {
+  width: 100%;
+  min-height: 40px;
+  flex: none;
+  margin-top: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  &:not(:disabled):hover {
+    background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
 }
 
 // Rule list
-.rules-list { @include section-list; }
+.rules-list {
+  @include section-list;
+  overflow-y: auto;
+  min-height: 0;
+  overflow-x: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 1px 4px var(--shadow);
+}
 
 .rules-empty {
   text-align: center;
   color: var(--text-muted);
   padding: 24px 0;
-  font-size: 0.85rem;
+  font-size: var(--text-small);
 }
 
 .rule-row {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--surface);
-  font-size: 0.85rem;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  font-size: var(--text-small);
 
   &.disabled {
-    opacity: 0.5;
+    color: var(--text-muted);
+
+    .container-pill,
+    .rule-pattern,
+    .rule-mini-icon,
+    .small-btn,
+    .rule-toggle {
+      opacity: 0.46;
+    }
+  }
+
+  &:last-child {
+    border-bottom: 0;
   }
 }
 
@@ -56,7 +268,7 @@
   cursor: pointer;
   word-break: break-all;
   font-family: $font-mono;
-  font-size: 0.8rem;
+  font-size: var(--text-small);
 
   &:hover {
     text-decoration: underline;
@@ -65,87 +277,157 @@
 
 .rule-host-edit {
   width: 100%;
-  padding: 2px 4px;
-  border: 1px solid var(--text-muted);
-  border-radius: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
   font-family: $font-mono;
-  font-size: 0.8rem;
+  font-size: var(--text-small);
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus);
+  }
 }
 
 .rule-container-badge {
-  padding: 2px 6px;
-  background: var(--btn);
-  border-radius: 3px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer;
+  max-width: 132px;
 }
 
 .rule-container-inline-select {
   padding: 2px 4px;
   border: 1px solid var(--focus);
-  border-radius: 3px;
-  font-size: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
   max-width: 120px;
 }
 
-// Lifetime button in rule row
-.rule-lifetime-btn {
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  background: var(--btn);
-  color: var(--text-muted);
-  line-height: normal;
+.dialog-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
 
-  &.is-temp {
-    color: var(--accent);
+.dialog-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 32px;
+
+  > span:first-child {
+    color: var(--text-secondary);
+    font-weight: 700;
   }
 
-  &:hover:not(:disabled) { background: var(--btn-hover); }
-  &:disabled { opacity: 0.4; cursor: default; }
+  .field,
+  .rules-container-input {
+    width: 100%;
+  }
+
+  &.textarea-row {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+
+    > span:first-child {
+      padding-top: 0;
+    }
+
+    .rule-pattern-textarea {
+      width: 100%;
+    }
+  }
 }
 
-// Lifetime toggle in add form
-.rules-lifetime-label {
-  display: flex;
+.rules-add-group {
+  overflow: hidden;
+}
+
+.rules-page-field {
+  display: grid;
+  grid-template-columns: $row-icon-box minmax(92px, 128px) minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
+  min-height: 48px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &.textarea-row {
+    grid-template-columns: $row-icon-box minmax(0, 1fr);
+    align-items: start;
+    row-gap: 8px;
+
+    .setting-icon {
+      margin-top: 0;
+    }
+
+    .rule-pattern-textarea {
+      grid-column: 2 / -1;
+      width: 100%;
+    }
+  }
 }
 
-.rules-lifetime-toggle {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
+.rules-import-form {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.rules-import-textarea {
+  width: 100%;
+  min-height: 220px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  resize: vertical;
+}
+
+.rules-import-field {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rules-import-error {
+  display: none;
+  color: var(--danger);
+  font-size: var(--text-meta);
+  line-height: 1.35;
+}
+
+.rules-import-error.active {
+  display: block;
 }
 
 .rule-toggle {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 34px;
+  height: 20px;
 }
 
 .rule-delete-btn { @include section-delete-btn; }
 
-// Bulk actions
-.rules-bulk-actions {
+.rule-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
 }
 
-.rules-bulk-btn {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  background: var(--btn);
-  color: var(--text-secondary);
-  &:hover { background: var(--btn-hover); }
+.small-btn {
+  &.delete:hover {
+    color: var(--danger);
+  }
+}
+
+// Bulk actions
+.rules-transfer-owner-actions {
+  display: none;
 }

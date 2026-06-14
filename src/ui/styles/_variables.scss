@@ -11,17 +11,18 @@ $font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", Menlo, Co
 
 @mixin section-input {
   flex: 1;
-  padding: 6px 8px;
+  height: 34px;
+  padding: 0 10px;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
   &:focus { outline: none; border-color: var(--focus); }
 }
 
 @mixin section-add-btn {
   padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
   font-weight: 600;
   line-height: 1;
   background: var(--accent);
@@ -32,38 +33,70 @@ $font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", Menlo, Co
 @mixin section-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
+  min-height: 0;
 }
 
 @mixin section-delete-btn {
-  padding: 4px 8px;
-  background: none;
+  min-width: $row-action-size;
+  height: $row-action-size;
+  padding: 0;
+  background: transparent;
   color: var(--text-muted);
-  font-size: 1.1rem;
-  line-height: 1;
-  border-radius: 3px;
-  &:hover { color: var(--text); background: var(--btn-hover); }
+  font-size: var(--text-small);
+  line-height: normal;
+  border-radius: var(--radius-md);
+  &:hover { color: var(--danger); background: var(--btn-hover); }
 }
 
 // Light theme (SCSS source → CSS custom properties in _global.scss)
-$color-bg: #fcfcfc;
-$color-surface: #fefefe;
-$color-text: #0a0a0a;
-$color-text-secondary: #5e5e5e;
-$color-text-muted: #767676;
-$color-border: #dddddd;
-$color-btn: #f0f0f0;
-$color-btn-hover: #e0e0e0;
-$color-btn-icon: #696969;
-$color-accent: #3adb76;
-$color-accent-hover: #22bb5b;
+$color-bg: #f7f7fb;
+$color-surface: #ffffff;
+$color-text: #17151f;
+$color-text-secondary: #475467;
+$color-text-muted: #667085;
+$color-border: #e8e6f0;
+$color-btn: #f1f0f8;
+$color-btn-hover: #eeeaff;
+$color-btn-icon: #667085;
+$color-accent: #6947f5;
+$color-accent-hover: #5535d7;
 $color-warning: #ffae00;
 $color-warning-hover: #cc8b00;
-$color-danger: #d70022;
+$color-danger: #e5484d;
+$color-danger-bg: #fff1f1;
+$color-danger-border: #ffd4d6;
 $color-focus: #0a84ff;
 $color-focus-hover: #0060df;
 $color-loader: #dddddd;
-$color-overlay: rgba(0, 0, 0, 0.5);
-$color-shadow: rgba(0, 0, 0, 0.08);
+$color-overlay: rgba(23, 21, 31, 0.36);
+$color-shadow: rgba(30, 25, 60, 0.08);
 $color-toast-bg: #f0f0f0;
 $color-toast-text: #696969;
+
+$row-icon-box: 26px;
+$row-icon-size: 14px;
+$row-action-icon: 14px;
+$row-action-size: 26px;
+$radius-md: 4px;
+$radius-pill: 999px;
+
+// Dark theme palette — used by :root[data-theme="dark"] and prefers-color-scheme
+$color-bg-dark: #18161f;
+$color-surface-dark: #211e2c;
+$color-text-dark: #f0eeff;
+$color-text-secondary-dark: #a8a5b8;
+$color-text-muted-dark: #7a7790;
+$color-border-dark: #312c47;
+$color-btn-dark: #2a2540;
+$color-btn-hover-dark: #312c47;
+$color-btn-icon-dark: #a8a5b8;
+$color-accent-dark: #8a6ffa;
+$color-accent-hover-dark: #a48ffb;
+$color-danger-dark: #ff6b70;
+$color-focus-dark: #3a9eff;
+$color-focus-hover-dark: #62b3ff;
+$color-shadow-dark: rgba(0, 0, 0, 0.4);
+$color-toast-bg-dark: #2a2738;
+$color-toast-text-dark: #a8a5b8;
+$color-overlay-dark: rgba(0, 0, 0, 0.65);

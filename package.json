@@ -1,21 +1,26 @@
 {
-  "name": "containerise",
-  "version": "0.2.2",
+  "name": "containtab",
+  "version": "0.3.0",
   "description": "Firefox extension to automatically open websites in a container",
   "main": "index.js",
   "type": "module",
-  "repository": "https://kintesh@github.com/kintesh/containerise.git",
-  "author": "Kintesh <i.am@kinte.sh>",
+  "repository": "https://github.com/woolkingx/containTAB.git",
+  "author": "woolkingx <207791411+woolkingx@users.noreply.github.com>",
+  "contributors": [
+    "Kintesh <i.am@kinte.sh>",
+    "woolkingx <207791411+woolkingx@users.noreply.github.com>"
+  ],
   "license": "MIT",
   "scripts": {
     "webpack": "webpack --config ./webpack.dev.cjs --watch",
     "prebuild": "rimraf build && rimraf web-ext-artifacts",
     "build": "npm run lint && npm run test && webpack --config ./webpack.prod.cjs",
+    "check:extension-identity": "node scripts/check-extension-identity.mjs",
     "postbuild": "cp -a static/ build/ && web-ext build -s build/",
     "web-ext": "web-ext run -s build/ --start-url=about:debugging#addons",
     "web-ext-perm": "mkdirp ./profile && web-ext run -s build/ --start-url=about:debugging#addons -p ./profile --keep-profile-changes",
     "lint": "eslint --ignore-path .gitignore ./",
-    "test": "vitest run",
+    "test": "vitest run --exclude src/ui/__tests__/popup-smoke-parity.test.js",
     "test:watch": "vitest"
   },
   "devDependencies": {

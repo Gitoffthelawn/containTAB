@@ -9,7 +9,7 @@
  * Orphan tabs (e.g. after startup cleanup deleted their container) fall through
  * to rule match / container rebuild, so reload naturally restores the binding.
  *
- * Schema: Tab.schema.json x-invariants, MatchResult.schema.json x-decision-tree step_3b
+ * Schema: Tab.schema.json x-invariants, AssignmentDecision.schema.json x-decision-tree step_3b
  */
 
 const NO_CONTAINER_ID = 'firefox-default';

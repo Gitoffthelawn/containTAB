@@ -1,130 +1,177 @@
 @use "variables" as *;
-// Settings section
 
-.settings-form {
-  max-width: 400px;
+.settings-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
 }
 
-.settings-section {
-  margin-bottom: 16px;
-}
-
-.settings-section-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-
-.settings-item {
-  margin-bottom: 10px;
-  padding-left: 4px;
-
-  &.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  label {
-    display: block;
-    font-size: 0.85rem;
-    margin-bottom: 2px;
-  }
-}
-
-.settings-checkbox-label {
-  display: flex !important;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-
-  input[type="checkbox"] {
-    cursor: pointer;
-    width: 16px;
-    height: 16px;
-  }
-}
-
-.settings-description {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-  padding-left: 20px;
-}
-
-.settings-text-input {
-  width: 100%;
-  padding: 4px 8px;
+.settings-group {
+  margin-bottom: 12px;
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-family: $font-mono;
-  margin-top: 4px;
-
-  &:focus {
-    outline: none;
-    border-color: var(--focus);
-  }
-
-  &:disabled {
-    background: var(--btn);
-  }
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: 0 1px 4px var(--shadow);
 }
 
-.settings-radio-group {
-  display: flex;
-  gap: 16px;
-  margin-top: 4px;
+.settings-group.danger-zone {
+  margin-top: 16px;
 }
 
-.settings-radio-option {
-  display: flex !important;
+.settings-title {
+  margin: 0;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.setting-row {
+  display: grid;
+  grid-template-columns: $row-icon-box minmax(0, 1fr) 156px;
+  gap: 10px;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
 
-  input[type="radio"] {
-    cursor: pointer;
+  &:last-child {
+    border-bottom: 0;
   }
 }
 
-// Action buttons
-.settings-actions {
+.svg-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-scroll .title {
+  font-weight: 750;
+  font-size: var(--text-small);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.settings-scroll .sub {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+  overflow: hidden;
+  line-height: 1.35;
+}
+
+.field {
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 0 10px;
+  min-width: 0;
+  outline: 0;
+  color: var(--text);
+  font-size: var(--text-small);
+}
+
+.field:disabled {
+  opacity: 0.5;
+  background: #f1f0f8;
+}
+
+.select {
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 0 10px;
+  color: var(--text);
+  font-size: var(--text-small);
+}
+
+.settings-select {
+  width: 100%;
+  min-width: 156px;
+}
+
+.status-chip {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  font-size: var(--text-meta);
+  white-space: nowrap;
+}
+
+.setting-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
   justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  width: 100%;
 }
 
-.settings-reset-btn,
-.settings-cancel-btn,
-.settings-save-btn {
-  padding: 6px 16px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  line-height: normal;
-}
-
-.settings-save-btn {
-  background: var(--accent);
-  color: #fff;
-
-  &:hover {
-    background: var(--accent-hover);
-  }
-}
-
-.settings-cancel-btn {
+.secondary {
+  height: 34px;
+  min-width: 70px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   background: var(--btn);
-  &:hover { background: var(--btn-hover); }
+  color: var(--text);
 }
 
-.settings-reset-btn {
-  background: none;
-  color: var(--text-muted);
-  &:hover { color: var(--text); }
+.secondary:hover {
+  background: var(--btn-hover);
+}
+
+.settings-switch {
+  width: 26px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--switch-off-track);
+  position: relative;
+  transition: 0.15s;
+}
+
+.settings-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: 0.15s;
+}
+
+.settings-switch.on {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: var(--switch-on-track);
+}
+
+.settings-switch.on::after {
+  background: var(--accent);
+  transform: translateX(12px);
+}
+
+.danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.disabled-row {
+  opacity: 0.58;
 }

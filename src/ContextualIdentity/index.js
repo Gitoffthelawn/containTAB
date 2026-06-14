@@ -1,7 +1,5 @@
-import HostStorage from '../Storage/HostStorage';
-import PreferenceStorage from '../Storage/PreferenceStorage';
-// fingerprint subsystem — disabled, pending Gecko-layer integration
-// import { onContainerCreated, onContainerRemoved } from '../fingerprint/index.js';
+import ContainerExtension, { nativeIconForUiIcon } from '../ContainerExtension';
+import { onContainerCreated, onContainerRemoved } from '../fingerprint/index.js';
 
 export const NO_CONTAINER = {
   name: 'No Container',
@@ -28,57 +26,42 @@ class ContextualIdentities {
     this.contextualIdentities = browser.contextualIdentities;
     this.addOnRemoveListener(async (changeInfo) => {
       const cookieStoreId = changeInfo.contextualIdentity.cookieStoreId;
-      // check if container was untilLastTab — keep rules for re-creation on next match
-      const lifetime = await PreferenceStorage.get(
-        `containers.${cookieStoreId}.lifetime`,
-        true,
-      ).catch(() => 'forever');
-      this.cleanPreferences(cookieStoreId);
-      // DISABLED: onContainerRemoved(cookieStoreId) — fingerprint hooks decoupled, see CLAUDE.md
-      if (lifetime !== 'untilLastTab') {
-        this.cleanMaps(cookieStoreId);
-      }
+      // Keep rules: orphan cookieStoreId is repaired on the next matching request.
+      await onContainerRemoved(cookieStoreId);
+      await ContainerExtension.destroy(cookieStoreId);
     });
   }
 
-  async create(name) {
+  async create(name, opts = {}) {
     const identity = await this.contextualIdentities.create({
       name: name,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      icon: 'circle',
+      icon: nativeIconForUiIcon(opts.uiIcon),
     });
-    // DISABLED: await onContainerCreated(identity.cookieStoreId) — fingerprint hooks decoupled, see CLAUDE.md
+    await ContainerExtension.create(identity.cookieStoreId, {
+      lifetime: opts.lifetime || 'forever',
+    });
+    await onContainerCreated(identity.cookieStoreId);
     return identity;
   }
 
   /**
-   * Update a container's properties (name, color, icon).
+   * Update Firefox-owned container properties.
+   * containTAB UI icons are projected from Firefox native identity.icon.
    */
   update(cookieStoreId, details) {
     return this.contextualIdentities.update(cookieStoreId, details);
   }
 
   /**
-   * Gets rid of a container and all corresponding rules
+   * Removes the Firefox native container identity.
+   * Host rules are preserved so deleted containers can be recreated on match.
    */
   async remove(cookieStoreId) {
     if (cookieStoreId === NO_CONTAINER.cookieStoreId) {
       return;
     }
     return this.contextualIdentities.remove(cookieStoreId);
-  }
-
-  async cleanMaps(cookieStoreId) {
-    const hostMaps = await HostStorage.getAll();
-    return HostStorage.remove(Object.keys(hostMaps)
-        .filter(host => hostMaps[host].cookieStoreId === cookieStoreId)
-    );
-  }
-  async cleanPreferences(cookieStoreId) {
-    const preferences = await PreferenceStorage.getAll();
-    return PreferenceStorage.remove(Object.keys(preferences)
-        .filter(prefName => prefName.startsWith(`containers.${cookieStoreId}`))
-    );
   }
 
   getAll(details = {}) {

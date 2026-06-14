@@ -81,7 +81,7 @@ export default class PrefixStorage {
     }
     const listener = (changes, area) => {
       let prefixChanges = this._getNonPrefixedObject(changes);
-      if(!prefixChanges){
+      if(Object.keys(prefixChanges).length === 0){
         return;
       }
       fn(prefixChanges, area);

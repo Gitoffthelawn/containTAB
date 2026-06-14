@@ -24,17 +24,62 @@ import { extract } from './url-ast.js';
  */
 export function sortBySpecificity(rules) {
   return [...rules].sort((a, b) => {
-    const segA = countSpecificity(a.host);
-    const segB = countSpecificity(b.host);
+    const segA = countHostSpecificity(a.host);
+    const segB = countHostSpecificity(b.host);
     return segB - segA;
   });
 }
 
-function countSpecificity(host) {
+function splitHostTokens(host) {
+  if (host == null) return []; // eslint-disable-line eqeqeq -- idiomatic null+undefined check
+  return String(host).split(';').map(token => token.trim()).filter(Boolean);
+}
+
+function countTokenSpecificity(host) {
   // strip @ prefix for fragment rules
   const h = host[0] === '@' ? host.slice(1) : host;
   // count non-wildcard segments
   return h.split('.').filter(s => s !== '*').length;
+}
+
+function countMatchedTokenSpecificity(host) {
+  const h = host[0] === '@' ? host.slice(1) : host;
+  const segmentScore = countTokenSpecificity(host);
+  const literalScore = h.replace(/\*/g, '').length;
+  return (segmentScore * 1000) + literalScore;
+}
+
+function countHostSpecificity(host) {
+  const tokens = splitHostTokens(host);
+  if (tokens.length === 0) return 0;
+  return Math.max(...tokens.map(countTokenSpecificity));
+}
+
+function tokenMatchesHost(hostname, pattern) {
+  // fragment mode: @text — plain string includes()
+  if (pattern[0] === '@') {
+    const fragment = pattern.slice(1).toLowerCase();
+    return hostname.toLowerCase().includes(fragment);
+  }
+
+  // glob mode: * = any string
+  return globMatch(hostname, pattern);
+}
+
+function matchedHostSpecificity(hostname, rule) {
+  if (rule.enabled === false) return null;
+
+  const patterns = splitHostTokens(rule.host);
+  if (patterns.length === 0) return null;
+
+  let best = null;
+  for (const pattern of patterns) {
+    if (tokenMatchesHost(hostname, pattern)) {
+      const specificity = countMatchedTokenSpecificity(pattern);
+      best = best === null ? specificity : Math.max(best, specificity);
+    }
+  }
+  return best;
 }
 
 /**
@@ -96,19 +141,7 @@ function globMatch(hostname, pattern) {
  * @returns {boolean}
  */
 export function ruleMatchesHost(hostname, rule) {
-  if (rule.enabled === false) return false;
-
-  const pattern = rule.host;
-  if (pattern == null) return false; // eslint-disable-line eqeqeq -- idiomatic null+undefined check
-
-  // fragment mode: @text — plain string includes()
-  if (pattern[0] === '@') {
-    const fragment = pattern.slice(1).toLowerCase();
-    return hostname.toLowerCase().includes(fragment);
-  }
-
-  // glob mode: * = any string
-  return globMatch(hostname, pattern);
+  return matchedHostSpecificity(hostname, rule) !== null;
 }
 
 /**
@@ -154,12 +187,14 @@ export function match(url, rules) {
     return null;
   }
 
-  const sorted = sortBySpecificity(rules.filter(r => r.enabled !== false));
+  const matched = rules
+    .map((rule, index) => ({
+      rule,
+      index,
+      specificity: matchedHostSpecificity(hostname, rule),
+    }))
+    .filter(item => item.specificity !== null)
+    .sort((a, b) => (b.specificity - a.specificity) || (a.index - b.index));
 
-  for (const rule of sorted) {
-    if (ruleMatchesHost(hostname, rule)) {
-      return rule;
-    }
-  }
-  return null;
+  return matched[0]?.rule || null;
 }

@@ -1,7 +1,7 @@
 /**
  * containers.js — Main orchestrator for tab-container assignment.
  *
- * Data flow (MatchResult.schema.json x-decision-tree):
+ * Data flow (AssignmentDecision.schema.json x-decision-tree):
  *   1. Ignored URL? → skip
  *   2. Tab being created by us? → skip (prevent loop)
  *   3. Incognito? → skip
@@ -14,9 +14,10 @@
 import Storage from './Storage/HostStorage';
 import ContextualIdentity from './ContextualIdentity';
 import Tabs from './Tabs';
-import PreferenceStorage from './Storage/PreferenceStorage';
+import GlobalConfig from './GlobalConfig';
+import ContainerExtension from './ContainerExtension';
 import { buildDefaultContainer } from './defaultContainer';
-import { match, isLocked, needsRedirect, isRedirectable, targetContainer } from './core/index.js';
+import { decide, decidePreRule, toWebRequestResult } from './core/index.js';
 
 const IGNORED_URLS_REGEX = /^(about|moz-extension|file|javascript|data|chrome):/;
 
@@ -39,17 +40,17 @@ const creatingTabs = {};
 const newTabs = new Set();
 const _newTabTimers = new Map();
 
-const PREFERENCE_DEFAULTS = {
-  defaultContainer: true,
-  'defaultContainer.containerName': '{fqdn}',
-  'defaultContainer.lifetime': 'untilLastTab',
-  keepOldTabs: false,
-};
+const startupMigration = Promise.all([
+  GlobalConfig.migrate(),
+  ContainerExtension.migrate(),
+]).catch((err) => {
+  console.error('containTAB: storage migration failed:', err);
+});
 
 /**
  * Create a new tab in the target container, optionally closing the old one.
  */
-const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) => {
+const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId, keepOldTabs) => {
   Tabs.get(currentTabId).then((currentTab) => {
     const createOptions = {
       url,
@@ -74,13 +75,9 @@ const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) =
       console.error('containTAB: failed to create tab:', err);
     });
 
-    PreferenceStorage.get('keepOldTabs').then(({ value }) => {
-      if (!value || /^(about:|moz-extension:)/.test(currentTab.url)) {
-        Tabs.remove(currentTabId);
-      }
-    }).catch(() => {
+    if (!keepOldTabs || /^(about:|moz-extension:)/.test(currentTab.url)) {
       Tabs.remove(currentTabId);
-    });
+    }
   }).catch(err => {
     console.error('containTAB: failed to get tab for redirect:', err);
   });
@@ -96,99 +93,106 @@ const createTab = (url, newTabIndex, currentTabId, openerTabId, cookieStoreId) =
  * @returns {Promise<object>}
  */
 async function handle(url, tabId, { skipLock = false } = {}) {
-  // Step 1: filter ignored URLs
-  if (IGNORED_URLS_REGEX.test(url)) {
-    return {};
-  }
+  await startupMigration;
 
   // Step 2: prevent redirect loops (clean up stale entry)
   if (creatingTabs[tabId] && creatingTabs[tabId] !== url) {
     delete creatingTabs[tabId];
   }
 
-  const [preferences, currentTab, identities] = await Promise.all([
-    PreferenceStorage.getAll(true).then(p => ({ ...PREFERENCE_DEFAULTS, ...p })),
+  const earlyDecision = decidePreRule(url, {
+    id: tabId,
+    cookieStoreId: 'firefox-default',
+    incognito: false,
+  }, {
+    creatingTabs,
+    skipLock: true,
+  });
+  if (earlyDecision) {
+    return toWebRequestResult(earlyDecision);
+  }
+
+  const [config, currentTab, identities] = await Promise.all([
+    GlobalConfig.get(),
     Tabs.get(tabId),
     ContextualIdentity.getAll(),
   ]);
 
-  const existingContainerIds = new Set(identities.map(i => i.cookieStoreId));
-
-  // Step 3: skip if not redirectable (incognito or being created)
-  if (!isRedirectable(currentTab, creatingTabs, url)) {
-    return {};
+  const preRuleDecision = decidePreRule(url, currentTab, {
+    creatingTabs,
+    identities,
+    skipLock,
+  });
+  if (preRuleDecision) {
+    return toWebRequestResult(preRuleDecision);
   }
 
-  // Step 4: CONTAINER LOCK — tab in a valid existing container → locked, done.
-  // Orphan cookieStoreId (container was deleted) falls through to rebuild.
-  // skipLock=true used by tabs.onCreated: new tab inherits opener's container
-  // by Firefox default, which is NOT a user choice — must re-decide.
-  if (!skipLock && isLocked(currentTab.cookieStoreId, existingContainerIds)) {
-    return {};
-  }
-
-  // Step 5: try rule match (tab is in default or orphan, needs assignment)
   const allRules = await Storage.getAll();
   const rulesArray = Object.keys(allRules).map(key => allRules[key]);
-  const matchedRule = match(url, rulesArray);
+  const decision = decide(url, currentTab, rulesArray, config, {
+    creatingTabs,
+    identities,
+    skipLock,
+  });
+  const committedDecision = await commitEffects(decision, { url, currentTab, config });
+  return toWebRequestResult(committedDecision);
+}
 
-  if (matchedRule) {
-    // find or create target container
-    const existingIdentity = matchedRule.cookieStoreId
-      ? targetContainer(matchedRule, identities)
-      : null;
+async function commitEffects(decision, { url, currentTab, config }) {
+  if (!decision.effects?.includes('create_tab')) return decision;
 
-    let targetCookieStoreId;
-
-    if (existingIdentity) {
-      targetCookieStoreId = existingIdentity.cookieStoreId;
-    } else {
-      // container missing (empty, deleted, or untilLastTab) — create it
-      const containerName = matchedRule.containerName || matchedRule.host;
-      try {
-        const newContainer = await ContextualIdentity.create(containerName);
-        targetCookieStoreId = newContainer.cookieStoreId;
-        await Storage.set({
-          ...matchedRule,
-          cookieStoreId: targetCookieStoreId,
-        });
-        console.info('containTAB: created container for rule:', matchedRule.host, '→', containerName);
-      } catch (err) {
-        console.error('containTAB: failed to create container:', err);
-        return {};
-      }
-    }
-
-    if (needsRedirect(currentTab.cookieStoreId, targetCookieStoreId)) {
-      return createTab(
+  if (decision.action === 'rebind') {
+    const containerName = decision.rule.containerName || decision.rule.host;
+    try {
+      const newContainer = await ContextualIdentity.create(containerName);
+      await Storage.set({
+        ...decision.rule,
+        cookieStoreId: newContainer.cookieStoreId,
+      });
+      console.info('containTAB: created container for rule:', decision.rule.host, '→', containerName);
+      createTab(
         url,
         currentTab.index + 1,
         currentTab.id,
         currentTab.openerTabId,
-        targetCookieStoreId
+        newContainer.cookieStoreId,
+        config.keepOldTabs
       );
-    }
-    return {};
-  }
-
-  // Step 6 & 7: no match — check defaultContainer preference
-  // Rule 2: no match → ISOLATED container (one-tab-one-world)
-  if (preferences.defaultContainer) {
-    const defaultContainer = await buildDefaultContainer(preferences, url);
-    const targetCookieStoreId = defaultContainer.cookieStoreId;
-
-    if (needsRedirect(currentTab.cookieStoreId, targetCookieStoreId)) {
-      return createTab(
-        url,
-        currentTab.index + 1,
-        currentTab.id,
-        currentTab.openerTabId,
-        targetCookieStoreId
-      );
+      return {
+        ...decision,
+        targetContainer: newContainer,
+      };
+    } catch (err) {
+      console.error('containTAB: failed to create container:', err);
+      return { action: 'skip', reason: 'rule_target_missing', matched: true, effects: ['none'] };
     }
   }
 
-  return {};
+  if (decision.action === 'create') {
+    const defaultContainer = await buildDefaultContainer(config.defaultContainer, url);
+    createTab(
+      url,
+      currentTab.index + 1,
+      currentTab.id,
+      currentTab.openerTabId,
+      defaultContainer.cookieStoreId,
+      config.keepOldTabs
+    );
+    return {
+      ...decision,
+      targetContainer: defaultContainer,
+    };
+  }
+
+  createTab(
+    url,
+    currentTab.index + 1,
+    currentTab.id,
+    currentTab.openerTabId,
+    decision.targetContainer.cookieStoreId,
+    config.keepOldTabs
+  );
+  return decision;
 }
 
 export const webRequestListener = (requestDetails) => {

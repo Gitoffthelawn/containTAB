@@ -1,14 +1,14 @@
 # <img src="static/icons/icon.png" alt="containTAB" width="42" align="top"/> containTAB
 
-Firefox extension that automatically opens websites in designated containers. Fork of [Containerise](https://github.com/kintesh/containerise), rewritten with one-tab-one-world isolation model.
+Firefox extension that automatically opens websites in designated containers. containTAB is a private-use fork of [Containerise](https://github.com/kintesh/containerise), maintained by woolkingx and rewritten with one-tab-one-world isolation model.
 
 ## Features
 
 - **Rule-based routing** — assign host patterns to containers (exact, glob `*.example.*`, fragment `@google`)
-- **One-tab-one-world** — unmatched URLs auto-create isolated containers with sequential naming (`github.com-001`, `github.com-002`)
+- **By-tab default containers** — unmatched URLs can auto-create isolated containers with short domain-prefixed sequence names (`github-01`, `youtube-01`)
 - **Container lock** — once a tab enters a container, it stays there
 - **Temporary containers** — lifetime `untilLastTab` auto-deletes the container when its last tab closes
-- **Drill-down popup UI** — main screen with 3 cards (Rules / Containers / Settings), each opens a dedicated sub-screen
+- **Drill-down popup UI** — Rules / Containers / Settings with dedicated subpage flows for create, edit, import, and help
 - **Dark mode** — follows system `prefers-color-scheme`
 
 ## Usage
@@ -41,7 +41,7 @@ Three matching modes. No regex — just `*` and `@`.
 
 ### Default Container
 
-When enabled, URLs without a matching rule get their own container. Configure the naming template with variables: `{domain}`, `{fqdn}`, `{tld}`, `{host}`, `{ms}`.
+When enabled, URLs without a matching rule get their own container. The popup exposes named strategies such as `bytab`, grouping by domain, or grouping by host; raw naming templates are not part of the public UI.
 
 ### Container Lifetime
 
@@ -64,11 +64,34 @@ ETP Strict mode can break site logins and payment flows inside containers. Stand
 npm ci                  # install dependencies
 npm run webpack         # dev build with --watch
 npm run web-ext         # launch Firefox with extension loaded
-npx vitest run          # run tests (362 tests)
+npm test                # run tests
+npm run check:extension-identity # verify the canonical Firefox extension ID
 npx vitest run --coverage  # with v8 coverage report
 npm run build           # production build + lint + test
 ```
 
+## Private install
+
+Current private release: `0.3.0`.
+
+Install the generated `web-ext-artifacts/containtab-0.3.0.zip` from file. The
+manifest uses the private Firefox extension id `containtab@woolkingx.local` and
+does not define `browser_specific_settings.gecko.update_url`, so this build does
+not opt into self-hosted automatic updates or the original add-on update chain.
+
+Storage is scoped by Firefox extension identity. Keep source, policy bundles,
+and installed packages on `containtab@woolkingx.local`; changing IDs creates a
+different `browser.storage.local` namespace.
+
+Before upgrading or reinstalling from a differently signed build, export your
+rules from `Settings > Import / Export rules > Export`. A signing or extension
+ID change can move Firefox to a different storage namespace, so older rules may
+not be visible to the newly installed build until they are imported again.
+
+Known Lacuna caveat: same-ID install/update is the intended preservation path,
+but formal signing, Firefox UUID assignment, and profile namespace behavior still
+need future live-profile readback before being treated as fully proven.
+
 ## License
 
-MIT — see original [Containerise](https://github.com/kintesh/containerise) by Kintesh.
+MIT — containTAB fork maintained by woolkingx; original [Containerise](https://github.com/kintesh/containerise) by Kintesh.

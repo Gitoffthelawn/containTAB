@@ -13,35 +13,73 @@
   --btn-icon: #{$color-btn-icon};
   --accent: #{$color-accent};
   --accent-hover: #{$color-accent-hover};
+  --accent-tint: rgba(105, 71, 245, 0.10);
+  --accent-tint2: rgba(105, 71, 245, 0.06);
   --danger: #{$color-danger};
+  --danger-bg: #{$color-danger-bg};
+  --danger-border: #{$color-danger-border};
   --focus: #{$color-focus};
   --focus-hover: #{$color-focus-hover};
   --shadow: #{$color-shadow};
   --toast-bg: #{$color-toast-bg};
   --toast-text: #{$color-toast-text};
   --overlay: #{$color-overlay};
+  --radius-md: #{$radius-md};
+  --radius-panel: #{$radius-md};
+  --radius-pill: #{$radius-pill};
+  --font-size-small: 13px;
+  --font-size-title: 17px;
+  --font-size-label: 17px;
+  --font-size-ui: 15px;
+  --font-size-meta: 13px;
+  --font-size-code: 13px;
+  --text-small: var(--font-size-ui);
+  --text-title: var(--font-size-title);
+  --text-label: var(--font-size-label);
+  --text-meta: var(--font-size-meta);
+  --text-code: var(--font-size-code);
+  --line-height-ui: 1.4;
+  --line-height-tight: 1.35;
+  --switch-off-track: var(--surface);
+  --switch-on-track: var(--accent-tint);
 }
 
+@mixin dark-vars {
+  --bg: #{$color-bg-dark};
+  --surface: #{$color-surface-dark};
+  --text: #{$color-text-dark};
+  --text-secondary: #{$color-text-secondary-dark};
+  --text-muted: #{$color-text-muted-dark};
+  --border: #{$color-border-dark};
+  --btn: #{$color-btn-dark};
+  --btn-hover: #{$color-btn-hover-dark};
+  --btn-icon: #{$color-btn-icon-dark};
+  --accent: #{$color-accent-dark};
+  --accent-hover: #{$color-accent-hover-dark};
+  --accent-tint: rgba(138, 111, 250, 0.12);
+  --accent-tint2: rgba(138, 111, 250, 0.08);
+  --danger: #{$color-danger-dark};
+  --danger-bg: #3a1b1d;
+  --danger-border: #5a2a2c;
+  --focus: #{$color-focus-dark};
+  --focus-hover: #{$color-focus-hover-dark};
+  --shadow: #{$color-shadow-dark};
+  --toast-bg: #{$color-toast-bg-dark};
+  --toast-text: #{$color-toast-text-dark};
+  --overlay: #{$color-overlay-dark};
+  --switch-off-track: var(--surface);
+  --switch-on-track: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+
+// Explicit dark override (Settings select = 'dark')
+:root[data-theme="dark"] {
+  @include dark-vars;
+}
+
+// System mode: follow OS prefers-color-scheme
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1b22;
-    --surface: #2b2a33;
-    --text: #fbfbfe;
-    --text-secondary: #cfcfd8;
-    --text-muted: #8f8f9d;
-    --border: #3a3944;
-    --btn: #3a3944;
-    --btn-hover: #4a4955;
-    --btn-icon: #cfcfd8;
-    --accent: #2ac065;
-    --accent-hover: #1fa352;
-    --danger: #ff6680;
-    --focus: #0a84ff;
-    --focus-hover: #0060df;
-    --shadow: rgba(0, 0, 0, 0.3);
-    --toast-bg: #3a3944;
-    --toast-text: #cfcfd8;
-    --overlay: rgba(0, 0, 0, 0.65);
+  :root:not([data-theme]) {
+    @include dark-vars;
   }
 }
 
@@ -52,36 +90,35 @@
 }
 
 html {
-  font-size: 87.5%; // 14px base — compact for popup
+  font-size: var(--text-small);
   color-scheme: light dark;
 }
 
-html, body {
+html,
+body {
+  width: 430px;
+  height: 600px;
   font-family: $font-family;
   color: var(--text);
   background: var(--bg);
+  overflow: hidden;
 }
 
 body {
-  font-size: 1rem;
-  overflow-y: auto;
+  font-size: var(--text-small);
 }
 
 button {
   cursor: pointer;
   text-align: center;
-  padding: 0.2rem 0.8rem;
   font-family: $font-family;
-  font-size: 1rem;
+  font: inherit;
   border: none;
   transition: background-color 0.15s ease, color 0.15s ease;
-  background-color: var(--btn);
+  background: transparent;
   color: var(--text);
-  line-height: 0;
-
-  &:hover {
-    background-color: var(--btn-hover);
-  }
+  appearance: none;
+  -moz-appearance: none;
 
   svg {
     height: 18px;
@@ -90,8 +127,21 @@ button {
   }
 }
 
-input, select {
+input, select, textarea {
   font-family: $font-family;
+  font-size: var(--text-small);
+  line-height: var(--line-height-ui);
   color: var(--text);
   background: var(--surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

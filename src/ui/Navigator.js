@@ -1,38 +1,37 @@
 /**
- * Navigator — Main↔Sub screen drill-down navigation.
+ * Navigator — Bottom-tab popup navigation.
  *
- * Main screen shows 3 cards (Rules, Containers, Settings).
- * Click card → sub screen. Back button → main screen.
+ * Containers, Rules, and Settings are primary tabs. Help is a temporary
+ * secondary screen that returns to the last primary tab.
  */
 
 import {qs, qsAll} from '../utils';
 
 class Navigator {
   constructor() {
-    this.current = 'main';
+    this.current = 'rules';
+    this.previousPrimary = 'rules';
     this.sections = {};
     this.setupEvents();
+    this.showScreen(this.current);
   }
 
   setupEvents() {
-    // Card clicks → navigate to sub screen
-    qsAll('.nav-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const target = card.dataset.target;
-        if (target) this.showSub(target);
+    qsAll('[data-target]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.target;
+        if (!target) return;
+        if (target === 'help') {
+          this.showHelp();
+          return;
+        }
+        this.showScreen(target);
       });
     });
 
-    // Back buttons → return to main
     qsAll('.back-button').forEach(btn => {
-      btn.addEventListener('click', () => this.showMain());
+      btn.addEventListener('click', () => this.showScreen(this.previousPrimary));
     });
-
-    // Help → sub screen
-    const helpBtn = qs('#help-toggle');
-    if (helpBtn) {
-      helpBtn.addEventListener('click', () => this.showSub('help'));
-    }
   }
 
   /**
@@ -44,9 +43,8 @@ class Navigator {
     this.sections[name] = section;
   }
 
-  showMain() {
-    // Hide current sub screen
-    if (this.current !== 'main' && this.sections[this.current]?.onHide) {
+  showScreen(name) {
+    if (this.current !== name && this.sections[this.current]?.onHide) {
       this.sections[this.current].onHide();
     }
 
@@ -55,29 +53,28 @@ class Navigator {
       s.classList.remove('active');
     });
 
-    const main = qs('#main-screen');
-    main.classList.remove('hide');
-    main.classList.add('active');
-    this.current = 'main';
-  }
-
-  showSub(name) {
-    qsAll('.screen').forEach(s => {
-      s.classList.add('hide');
-      s.classList.remove('active');
-    });
-
-    const sub = qs(`#${name}-screen`);
-    if (sub) {
-      sub.classList.remove('hide');
-      sub.classList.add('active');
+    const screen = qs(`#${name}-screen`);
+    if (screen) {
+      screen.classList.remove('hide');
+      screen.classList.add('active');
     }
 
     this.current = name;
+    if (name !== 'help') {
+      this.previousPrimary = name;
+    }
+
+    qsAll('.nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.target === name);
+    });
 
     if (this.sections[name]?.onShow) {
       this.sections[name].onShow();
     }
+  }
+
+  showHelp() {
+    this.showScreen('help');
   }
 
   /**

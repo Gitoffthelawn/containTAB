@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "containTAB",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Firefox extension to automatically open websites in a container",
   "icons": {
     "48": "icons/icon.png",
@@ -17,7 +17,7 @@
     "<all_urls>"
   ],
   "browser_action": {
-    "browser_style": true,
+    "browser_style": false,
     "default_title": "containTAB",
     "default_popup": "ui/index.html",
     "default_icon": "icons/icon.png"
@@ -25,9 +25,9 @@
   "background": {
     "scripts": ["index.js"]
   },
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
-      "id": "containerise@kinte.sh",
+      "id": "containtab@woolkingx.local",
       "strict_min_version": "53.0"
     }
   }
